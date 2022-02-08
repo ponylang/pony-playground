@@ -3,17 +3,19 @@ extern crate log;
 extern crate libc;
 extern crate wait_timeout;
 
+use anyhow::Result;
 use std::io::Write;
-use std::io;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::time::Duration;
 
-use docker::Container;
 pub use branches::Branch;
+use docker::{Container, RunResult};
 
-mod docker;
 mod branches;
+mod docker;
+mod github;
+pub mod routes;
 
 pub struct Playpen;
 impl Playpen {
@@ -21,19 +23,14 @@ impl Playpen {
         Playpen
     }
 
-    fn exec(&self,
-            branch: Branch,
-            cmd: &str,
-            args: Vec<String>,
-            input: String) -> io::Result<(ExitStatus, Vec<u8>)> {
-        let container = try!(Container::new(cmd, &args, &[], branch.image()));
-
-        let tuple = try!(container.run(input.as_bytes(), Duration::new(10, 0)));
-        let (status, mut output, timeout) = tuple;
-        if timeout {
-            output.extend_from_slice(b"\ntimeout triggered!");
-        }
-        Ok((status, output))
+    async fn exec(
+        branch: Branch,
+        cmd: &str,
+        args: Vec<String>,
+        input: String,
+    ) -> Result<RunResult> {
+        let container = Container::new(cmd, &args, &[], branch.image()).await?;
+        container.run(input.as_bytes(), Duration::new(10, 0)).await
     }
 
     fn parse_output(raw: &[u8]) -> (String, String) {
@@ -44,17 +41,24 @@ impl Playpen {
         (compiler, output)
     }
 
-    pub fn evaluate(&self, branch: Branch, code: String) -> io::Result<(ExitStatus, String, String)> {
-        let (status, raw_output) = self.exec(branch, "/usr/local/bin/evaluate.sh", vec![], code)?;
-        let (compiler, output) = Self::parse_output(&raw_output);
-        Ok((status, compiler, output))
+    pub async fn evaluate(branch: Branch, code: String) -> Result<(RunResult, String, String)> {
+        let result = Self::exec(branch, "/usr/local/bin/evaluate.sh", vec![], code).await?;
+        let (compiler, output) = Self::parse_output(result.stdout());
+        Ok((result, compiler, output))
     }
 
-    pub fn compile(&self, branch: Branch, code: String, emit: CompileOutput) -> io::Result<(ExitStatus, String, String)> {
+    pub async fn compile(
+        branch: Branch,
+        code: String,
+        emit: CompileOutput,
+    ) -> Result<(RunResult, String, String)> {
         let args = emit.as_opts().iter().map(|x| String::from(*x)).collect();
-        let (status, raw_output) = self.exec(branch, "/usr/local/bin/compile.sh", args, code)?;
-        let (compiler, output) = Self::parse_output(&raw_output);
-        Ok((status, compiler, output))
+        let result = Self::exec(branch, "/usr/local/bin/compile.sh", args, code).await?;
+        debug!("{:?}", result.result);
+        debug!("{}", String::from_utf8_lossy(result.stdout()));
+        debug!("{}", String::from_utf8_lossy(result.stderr()));
+        let (compiler, output) = Self::parse_output(result.stdout());
+        Ok((result, compiler, output))
     }
 }
 
@@ -85,7 +89,7 @@ impl FromStr for CompileOutput {
     }
 }
 
-/// Highlights compiled rustc output according to the given output format
+/// Highlights compiled asm or llvm ir output according to the given output format
 pub fn highlight(output_format: CompileOutput, output: &str) -> String {
     let lexer = match output_format {
         CompileOutput::Asm => "gas",
@@ -93,14 +97,20 @@ pub fn highlight(output_format: CompileOutput, output: &str) -> String {
     };
 
     let mut child = Command::new("pygmentize")
-                            .arg("-l")
-                            .arg(lexer)
-                            .arg("-f")
-                            .arg("html")
-                            .stdin(Stdio::piped())
-                            .stdout(Stdio::piped())
-                            .spawn().unwrap();
-    child.stdin.take().unwrap().write_all(output.as_bytes()).unwrap();
+        .arg("-l")
+        .arg(lexer)
+        .arg("-f")
+        .arg("html")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(output.as_bytes())
+        .unwrap();
     let output = child.wait_with_output().unwrap();
     assert!(output.status.success());
     String::from_utf8(output.stdout).unwrap()

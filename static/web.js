@@ -7,7 +7,7 @@
     function optionalLocalStorageGetItem(key) {
         try {
             return localStorage.getItem(key);
-        } catch(e) {
+        } catch (e) {
             return null;
         }
     }
@@ -15,7 +15,7 @@
     function optionalLocalStorageSetItem(key, value) {
         try {
             window.localStorage.setItem(key, value);
-        } catch(e) {
+        } catch (e) {
             // ignore
         }
     }
@@ -34,7 +34,7 @@
 
         var themeopt,
             themefrag = document.createDocumentFragment();
-        for (var i=0; i < themes.length; i++) {
+        for (var i = 0; i < themes.length; i++) {
             themeopt = document.createElement("option");
             themeopt.setAttribute("val", themes[i].theme);
             themeopt.textContent = themes[i].caption;
@@ -51,7 +51,7 @@
         var request = new XMLHttpRequest();
         request.open("POST", path, true);
         request.setRequestHeader("Content-Type", "application/json");
-        request.onreadystatechange = function() {
+        request.onreadystatechange = function () {
             button.disabled = false;
             if (request.readyState == 4) {
                 var json;
@@ -74,7 +74,7 @@
             }
         };
         request.timeout = 20000;
-        request.ontimeout = function() {
+        request.ontimeout = function () {
             set_result(result, "<p class=error>Connection timed out" +
                 "<p class=error-explanation>Are you connected to the Internet?");
         };
@@ -83,36 +83,36 @@
 
     var PYGMENTS_TO_ACE_MAPPINGS = {
         'asm': {
-            'c':  'ace_comment', // Comment,
+            'c': 'ace_comment', // Comment,
             'na': 'ace_support ace_function ace_directive', // Name.Attribute,
             'no': 'ace_constant', // Name.Constant,
             'nl': 'ace_entity ace_name ace_function', // Name.Label,
             'nv': 'ace_variable ace_parameter ace_register', // Name.Variable,
             'mh': 'ace_constant ace_character ace_hexadecimal', // Number.Hex,
             'mi': 'ace_constant ace_character ace_decimal', // Number.Integer,
-            'p':  'ace_punctuation', // Punctuation,
-            's':  'ace_string', // String,
+            'p': 'ace_punctuation', // Punctuation,
+            's': 'ace_string', // String,
             'sc': 'ace_string', // String.Char,
-            '':   '', // Text,
+            '': '', // Text,
         },
         'llvm-ir': {
-            'c':            'ace_comment', // Comment
-            'k':            'ace_keyword', // Keyword
-            'kt':           'ace_storage ace_type', // Keyword.Type
-            'nl':           'ace_identifier', // Name.Label
-            'nv':           'ace_variable', // Name.Variable
+            'c': 'ace_comment', // Comment
+            'k': 'ace_keyword', // Keyword
+            'kt': 'ace_storage ace_type', // Keyword.Type
+            'nl': 'ace_identifier', // Name.Label
+            'nv': 'ace_variable', // Name.Variable
             'nv-Anonymous': 'ace_support ace_variable', // Name.Variable.Anonymous
-            'vg':           'ace_variable ace_other', // Name.Variable.Global
-            'm':            'ace_constant ace_numeric', // Number
-            'p':            'ace_punctuation', // Punctuation
-            's':            'ace_string', // String
-            '':             '', // Text
+            'vg': 'ace_variable ace_other', // Name.Variable.Global
+            'm': 'ace_constant ace_numeric', // Number
+            'p': 'ace_punctuation', // Punctuation
+            's': 'ace_string', // String
+            '': '', // Text
         }
     };
 
     function rehighlight(pygmentized, language) {
         var mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
-        return pygmentized.replace(/<span class="([^"]*)">([^<]*)<\/span>/g, function() {
+        return pygmentized.replace(/<span class="([^"]*)">([^<]*)<\/span>/g, function () {
             var classes = mappings[arguments[1]];
             if (classes) {
                 return '<span class="' + classes + '">' + arguments[2] + '</span>';
@@ -137,7 +137,7 @@
             separate_output: true,
             color: true,
             branch: branch
-        }, function(object) {
+        }, function (object) {
             var samp, pre;
             set_result(result);
             if (object.compiler) {
@@ -152,10 +152,10 @@
             var div = document.createElement("p");
             div.className = "message";
             if (object.success) {
-                if (object.output) {
+                if (object.stdout) {
                     samp = document.createElement("samp");
                     samp.className = "output";
-                    samp.innerHTML = formatCompilerOutput(object.output);
+                    samp.innerHTML = formatCompilerOutput(object.stdout);
                     pre = document.createElement("pre");
                     pre.appendChild(samp);
                     result.appendChild(pre);
@@ -177,10 +177,10 @@
             color: true,
             highlight: true,
             branch: branch
-        }, function(object) {
+        }, function (object) {
             if ("error" in object) {
                 set_result(result, "<pre class=\"rustc-output rustc-errors\"><samp></samp></pre>");
-                result.firstChild.firstChild.innerHTML = formatCompilerOutput(object.error);
+                result.firstElementChild.firstElementChild.innerHTML = formatCompilerOutput(object.error);
             } else {
                 set_result(result, "<pre class=highlight><code>" + rehighlight(object.result, emit) + "</code></pre>");
             }
@@ -192,7 +192,7 @@
             code: code,
             base_url: PLAYPEN_URL,
             branch: branch,
-        }, function(response) {
+        }, function (response) {
             var gist_id = response.gist_id;
             var gist_url = response.gist_url;
 
@@ -214,7 +214,7 @@
         var req = new XMLHttpRequest();
 
         req.open(method, url, true);
-        req.onreadystatechange = function() {
+        req.onreadystatechange = function () {
             if (req.readyState == XMLHttpRequest.DONE) {
                 if (req.status == expect) {
                     if (on_success) {
@@ -238,26 +238,26 @@
     function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) {
         session.setValue("// Loading Gist: https://gist.github.com/" + gist_id + " ...");
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
-          function(response) {
-              response = JSON.parse(response);
-              if (response) {
-                  var files = response.files;
-                  for (var name in files) {
-                      if (files.hasOwnProperty(name)) {
-                          session.setValue(files[name].content);
+            function (response) {
+                response = JSON.parse(response);
+                if (response) {
+                    var files = response.files;
+                    for (var name in files) {
+                        if (files.hasOwnProperty(name)) {
+                            session.setValue(files[name].content);
 
-                          if (do_evaluate) {
-                              doEvaluate();
-                          }
-                          break;
-                      }
-                  }
-              }
-          },
-          function(status, response) {
-              set_result(result, "<p class=error>Failed to fetch Gist" +
-                  "<p class=error-explanation>Are you connected to the Internet?");
-          }
+                            if (do_evaluate) {
+                                doEvaluate();
+                            }
+                            break;
+                        }
+                    }
+                }
+            },
+            function (status, response) {
+                set_result(result, "<p class=error>Failed to fetch Gist" +
+                    "<p class=error-explanation>Are you connected to the Internet?");
+            }
         );
     }
 
@@ -298,9 +298,9 @@
         } else if (mode == "Vim") {
             editor.setKeyboardHandler("ace/keyboard/vim");
             if (!set_keyboard.vim_set_up) {
-                ace.config.loadModule("ace/keyboard/vim", function(m) {
+                ace.config.loadModule("ace/keyboard/vim", function (m) {
                     var Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
-                    Vim.defineEx("write", "w", function(cm, input) {
+                    Vim.defineEx("write", "w", function (cm, input) {
                         cm.ace.execCommand("evaluate");
                     });
                 });
@@ -384,11 +384,11 @@
         return text.replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/\x1b\[1m\x1b\[3([0-7])m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function(original, colorCode, text) {
+            .replace(/\x1b\[1m\x1b\[3([0-7])m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function (original, colorCode, text) {
                 return '<span class=ansi-' + COLOR_CODES[+colorCode] + '><strong>' + text + '</strong></span>';
-            }).replace(/\x1b\[3([0-7])m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function(original, colorCode, text) {
+            }).replace(/\x1b\[3([0-7])m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function (original, colorCode, text) {
                 return '<span class=ansi-' + COLOR_CODES[+colorCode] + '>' + text + '</span>';
-            }).replace(/\x1b\[1m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function(original, text) {
+            }).replace(/\x1b\[1m([^\x1b]*)(?:\x1b\(B)?\x1b\[0?m/g, function (original, text) {
                 return "<strong>" + text + "</strong>";
             }).replace(/(?:\x1b\(B)?\x1b\[0?m/g, '');
     }
@@ -402,7 +402,7 @@
     //to the beginning of that line
     function jumpToLine(text, r1) {
         return "<a onclick=\"javascript:editGo(" + r1 + ",1)\"" +
-            " onmouseover=\"javascript:editShowLine("+r1+")\"" +
+            " onmouseover=\"javascript:editShowLine(" + r1 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
             " class=\"linejump\">" + text + "</a>";
     }
@@ -410,17 +410,17 @@
     //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31: 2:32"
     //and thus selects a region on mouse hover, or when clicked sets cursor to
     //the beginning of region.
-    function jumpToRegion(text, r1,c1, r2,c2) {
-        return "<a onclick=\"javascript:editGo("+r1+","+c1+")\"" +
-            " onmouseover=\"javascript:editShowRegion("+r1+","+c1+", "+r2+","+c2+")\"" +
+    function jumpToRegion(text, r1, c1, r2, c2) {
+        return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
+            " onmouseover=\"javascript:editShowRegion(" + r1 + "," + c1 + ", " + r2 + "," + c2 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
             " class=\"linejump\">" + text + "</a>";
     }
 
     //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31"
-    function jumpToPoint(text, r1,c1) {
-        return "<a onclick=\"javascript:editGo("+r1+","+c1+")\"" +
-            " onmouseover=\"javascript:editShowPoint("+r1+","+c1+")\"" +
+    function jumpToPoint(text, r1, c1) {
+        return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
+            " onmouseover=\"javascript:editShowPoint(" + r1 + "," + c1 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
             " class=\"linejump\">" + text + "</a>";
     }
@@ -432,14 +432,14 @@
             .replace(/main\.pony:(\d+):(\d+)/mg, jumpToPoint);
     }
 
-    addEventListener("DOMContentLoaded", function() {
+    addEventListener("DOMContentLoaded", function () {
         evaluateButton = document.getElementById("evaluate");
         asmButton = document.getElementById("asm");
         irButton = document.getElementById("llvm-ir");
         formatButton = document.getElementById("format");
         gistButton = document.getElementById("gist");
         configureEditorButton = document.getElementById("configure-editor");
-        result = document.getElementById("result").firstChild;
+        result = document.getElementById("result").firstElementChild;
         clearResultButton = document.getElementById("clear-result");
         keyboard = document.getElementById("keyboard");
         themes = document.getElementById("themes");
@@ -455,9 +455,9 @@
 
         build_themes(themelist);
 
-        editor.renderer.on('themeChange', function(e) {
+        editor.renderer.on('themeChange', function (e) {
             var path = e.theme;
-            ace.config.loadModule(['theme', e.theme], function(t) {
+            ace.config.loadModule(['theme', e.theme], function (t) {
                 document.getElementById("result").className = t.cssClass + (t.isDark ? " ace_dark" : "");
             });
         });
@@ -503,7 +503,7 @@
             doEvaluate();
         }
 
-        addEventListener("resize", function() {
+        addEventListener("resize", function () {
             editor.resize();
         });
 
@@ -511,25 +511,25 @@
         //editor to lose focus. Just press Enter or Esc key to focus editor.
         //Without this, you'd most likely have to LMB somewhere in the editor
         //area which would change the location of its cursor to where you clicked.
-        addEventListener("keyup", function(e) {
+        addEventListener("keyup", function (e) {
             if ((document.body == document.activeElement) && //needed to avoid when editor has focus already
                 (13 == e.keyCode || 27 == e.keyCode)) { //Enter or Escape keys
                 editor.focus();
             }
         });
 
-        session.on("change", function() {
+        session.on("change", function () {
             var code = session.getValue();
             optionalLocalStorageSetItem("code", code);
         });
 
-        keyboard.onkeyup = keyboard.onchange = function() {
+        keyboard.onkeyup = keyboard.onchange = function () {
             var mode = keyboard.options[keyboard.selectedIndex].value;
             optionalLocalStorageSetItem("keyboard", mode);
             set_keyboard(editor, mode);
         };
 
-        evaluateButton.onclick = function() {
+        evaluateButton.onclick = function () {
             doEvaluate(true);
             editor.focus();
         };
@@ -537,7 +537,7 @@
         editor.commands.addCommand({
             name: "evaluate",
             exec: evaluateButton.onclick,
-            bindKey: {win: "Ctrl-Enter", mac: "Ctrl-Enter"}
+            bindKey: { win: "Ctrl-Enter", mac: "Ctrl-Enter" }
         });
 
         // ACE uses the "cstyle" behaviour for all languages by default, which
@@ -549,7 +549,7 @@
         // does not trigger this behaviour.
         editor.commands.addCommand({
             name: "rust_no_single_quote_autopairing",
-            exec: function(editor, line) {
+            exec: function (editor, line) {
                 var sess = editor.getSession();
                 var doc = sess.getDocument();
                 var selection = sess.getSelection();
@@ -564,7 +564,7 @@
                     // https://github.com/ajaxorg/ace/blob/v1.2.6/lib/ace/range.js#L106-L120
                     if (prev_range && prev_range.compareRange(ranges[i]) != -2) {
                         console.log("ranges intersect or are not in ascending order, skipping",
-                                    ranges[i]);
+                            ranges[i]);
                     }
                     prev_range = ranges[i];
 
@@ -573,7 +573,7 @@
                 // the selection contents were replaced, so clear the selection
                 selection.clearSelection();
             },
-            bindKey: {win: "'", mac: "'"},
+            bindKey: { win: "'", mac: "'" },
         });
 
         // We’re all pretty much agreed that such an obscure command as transposing
@@ -583,24 +583,24 @@
         delete transposeletters.bindKey;
         editor.commands.addCommand(transposeletters);
 
-        asmButton.onclick = function() {
+        asmButton.onclick = function () {
             compile("asm", result, session.getValue(), asmButton);
         };
 
-        irButton.onclick = function() {
+        irButton.onclick = function () {
             compile("llvm-ir", result, session.getValue(), irButton);
         };
 
-        gistButton.onclick = function() {
+        gistButton.onclick = function () {
             shareGist(result, session.getValue(), gistButton);
         };
 
-        configureEditorButton.onclick = function() {
+        configureEditorButton.onclick = function () {
             var dropdown = configureEditorButton.nextElementSibling;
             dropdown.style.display = dropdown.style.display ? "" : "block";
         };
 
-        clearResultButton.onclick = function() {
+        clearResultButton.onclick = function () {
             clear_result(result);
         };
 
@@ -619,13 +619,13 @@ function editorGet() {
     return window.ace.edit("editor");
 }
 
-function editGo(r1,c1) {
+function editGo(r1, c1) {
     var e = editorGet();
     old_range = undefined;
     e.focus();
     e.selection.clearSelection();
-    e.scrollToLine(r1-1, true, true);
-    e.selection.moveCursorTo(r1-1, c1-1, false);
+    e.scrollToLine(r1 - 1, true, true);
+    e.selection.moveCursorTo(r1 - 1, c1 - 1, false);
 }
 
 function editRestore() {
@@ -634,7 +634,7 @@ function editRestore() {
         e.selection.setSelectionRange(old_range, false);
         var mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
         var intmid = Math.round(mid);
-        var extra = (intmid - mid)*2 + 2;
+        var extra = (intmid - mid) * 2 + 2;
         var up = e.getFirstVisibleRow() - old_range.start.row + extra;
         var down = old_range.end.row - e.getLastVisibleRow() + extra;
         if (up > 0) {
@@ -645,14 +645,14 @@ function editRestore() {
     }
 }
 
-function editShowRegion(r1,c1, r2,c2) {
+function editShowRegion(r1, c1, r2, c2) {
     var e = editorGet();
     var es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(Math.round((r1 + r2) / 2), true, true);
-    es.setSelectionAnchor(r1-1, c1-1);
-    es.selectTo(r2-1, c2-1);
+    es.setSelectionAnchor(r1 - 1, c1 - 1);
+    es.selectTo(r2 - 1, c2 - 1);
 }
 
 function editShowLine(r1) {
@@ -661,18 +661,18 @@ function editShowLine(r1) {
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);
-    es.moveCursorTo(r1-1, 0);
+    es.moveCursorTo(r1 - 1, 0);
     es.moveCursorLineEnd();
-    es.selectTo(r1-1, 0);
+    es.selectTo(r1 - 1, 0);
 }
 
-function editShowPoint(r1,c1) {
+function editShowPoint(r1, c1) {
     var e = editorGet();
     var es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);
-    es.moveCursorTo(r1-1, 0);
+    es.moveCursorTo(r1 - 1, 0);
     es.moveCursorLineEnd();
-    es.selectTo(r1-1, c1-1);
+    es.selectTo(r1 - 1, c1 - 1);
 }
