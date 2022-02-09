@@ -22,8 +22,7 @@ async fn main() -> Result<()> {
         Ok(token) => token,
         Err(_) => panic!("Missing GITHUB_TOKEN environment variable."),
     };
-    let github_client =
-        hubcaps::Github::new("Pony Playground", Some(hubcaps::Credentials::Token(token)))?;
+    let github_client = pony_playground::init_github_client(token)?;
 
     // TODO: determine either by env var or command line argument
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));

@@ -138,13 +138,50 @@
             color: true,
             branch: branch
         }, function (object) {
-            var samp, pre;
+            var samp, pre, h;
             set_result(result);
             if (object.compiler) {
+                h = document.createElement("span");
+                h.className = "output-header";
+                h.textContent = "Ponyc Output";
+                result.appendChild(h);
+
                 samp = document.createElement("samp");
                 samp.innerHTML = formatCompilerOutput(object.compiler);
                 pre = document.createElement("pre");
-                pre.className = "rustc-output";
+                pre.classList.add("ponyc-output");
+                pre.classList.add("output");
+                pre.appendChild(samp);
+                result.appendChild(pre);
+            }
+
+            if (object.stdout) {
+                h = document.createElement("span");
+                h.className = "output-header";
+                h.textContent = "Standard Output";
+                result.appendChild(h);
+
+                samp = document.createElement("samp");
+                samp.className = "output-stdout";
+                pre.classList.add("output");
+                samp.innerHTML = formatCompilerOutput(object.stdout);
+                pre = document.createElement("pre");
+                pre.appendChild(samp);
+                result.appendChild(pre);
+            }
+            if (object.stderr) {
+                h = document.createElement("span");
+                h.className = "output-header";
+                pre.classList.add("output");
+                h.textContent = "Standard Error";
+                result.appendChild(h);
+
+                samp = document.createElement("samp");
+                samp.className = "output";
+                samp.innerHTML = formatCompilerOutput(object.stderr);
+                pre = document.createElement("pre");
+                pre.classList.add("output");
+                pre.classList.add("stderr");
                 pre.appendChild(samp);
                 result.appendChild(pre);
             }
@@ -152,13 +189,7 @@
             var div = document.createElement("p");
             div.className = "message";
             if (object.success) {
-                if (object.stdout) {
-                    samp = document.createElement("samp");
-                    samp.className = "output";
-                    samp.innerHTML = formatCompilerOutput(object.stdout);
-                    pre = document.createElement("pre");
-                    pre.appendChild(samp);
-                    result.appendChild(pre);
+                if (object.stdout || object.stderr) {
                     div.textContent = "Program ended.";
                 } else {
                     div.textContent = "Program ended with no output.";

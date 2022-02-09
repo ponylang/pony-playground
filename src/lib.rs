@@ -17,6 +17,8 @@ mod docker;
 mod github;
 pub mod routes;
 
+pub use github::init_client as init_github_client;
+
 pub struct Playpen;
 impl Playpen {
     pub fn new() -> Playpen {

@@ -14,13 +14,22 @@ First, create the Docker image that playpen will use:
 docker build docker -t ponylang-playpen
 ```
 
+Get a github personal access token. Only the `gist` scope needs to be selected.  
+Put it into the `GITHUB_TOKEN` environment variable. 
+
+```
+ export GITHUB_TOKEN="..."
+```
+
+It will be used for creating gists with the playgrounds contents.
+
 Next, spin up the server.
 
 ```
 cargo run --bin playpen
 ```
 
-You should now be able to browse http://127.0.0.1:8080 and interact.
+You should now be able to browse http://127.0.0.1:8000 and interact.
 
 ## Building for production
 
