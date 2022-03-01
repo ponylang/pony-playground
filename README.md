@@ -1,12 +1,19 @@
 A web interface for running Pony code.
 
-# Running your own Pony-Playpen
+Heavily based upon the [rust playpen](https://github.com/rust-lang/rust-playpen).
 
-## System Requirements
+## Installation
 
-Currently needs to be run on a system with access to Docker.
+See [Install.md](Install.md) for installation instructions for a real box.
 
-## Running the web server
+## Running your own Pony-Playpen locally
+
+### System Requirements
+
+* Docker
+* Rust (E.g. install via [Rustup](rustup.rs))
+
+### Running the web server
 
 First, create the Docker image that playpen will use:
 
@@ -22,6 +29,8 @@ Put it into the `GITHUB_TOKEN` environment variable.
 ```
 
 It will be used for creating gists with the playgrounds contents.
+If you want to test without a valid token, really all you need to do 
+is to set the variable to some gibberish.
 
 Next, spin up the server.
 
@@ -29,10 +38,5 @@ Next, spin up the server.
 cargo run --bin playpen
 ```
 
-You should now be able to browse http://127.0.0.1:8000 and interact.
+You should now be able to browse http://127.0.0.1:8000 and play.
 
-## Building for production
-
-```
-docker run --rm -it -v $HOME/.cargo/registry/ -v $PWD:/home/rust/src ekidd/rust-musl-builder:nightly-2020-09-04 cargo build --release
-```
