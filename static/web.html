@@ -1,54 +1,53 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <title>Pony Playground</title>
-        <meta charset="utf-8"/>
-        <meta name=viewport id=meta-viewport content="width=720">
-        <script>if (screen.width > 720) { document.getElementById("meta-viewport").setAttribute('content', 'width=device-width'); }</script>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700"/>
-        <link rel="shortcut icon" href="https://avatars1.githubusercontent.com/u/12997238"/>
-        <script src="https://cdn.jsdelivr.net/ace/1.2.6/min/ace.js"
-                integrity="sha512-Y/M43OHLyvSuqF2JuQU9RIerW7fH7i/h/7AokQPIXhoYiHIxKXYDCWcuyRSXiVCGGtnfYoIBklTZ4/t26Lrr/A=="
-                crossorigin="anonymous"
-                charset="utf-8"></script>
-        <script src="https://cdn.jsdelivr.net/ace/1.2.6/min/ext-themelist.js"
-                integrity="sha512-ZdrBduTZxDAOqGKxKVuFtIVU0wD82q0HXnUEj8/KBHZ9DbQuuAjfMZ7yyBnh3vzkOtMQex9jj8EuypRD+KGNSA=="
-                crossorigin="anonymous"
-                charset="utf-8"></script>
 
-        <link rel="stylesheet" href="web.css">
-        <script src="web.js"></script>
-        <script src="mode-pony.js"></script>
-    </head>
-    <body>
-        <form id="control">
-            <div
-                ><button type=button class=primary id=evaluate title="Execute your code (you can also press Ctrl+Enter when editing code)">Run</button
-                ><button type=button id=asm title="Compile to ASM">ASM</button
-                ><button type=button id=llvm-ir title="Compile to LLVM IR">LLVM IR</button
-            ></div
-            ><wbr><div
-                ><button type=button id=gist title="Share a link to your code via Gist">Share</button
-            ></div
-            ><wbr><div class=right-c-e
-                ><button type=button id=configure-editor><span>Configure editor</span></button
-                ><div class=dropdown>
-                    <p><label for=keyboard>Keyboard bindings:</label>
+<head>
+    <title>Pony Playground</title>
+    <meta charset="utf-8" />
+    <meta name=viewport id=meta-viewport content="width=720">
+    <script>if (screen.width > 720) { document.getElementById("meta-viewport").setAttribute('content', 'width=device-width'); }</script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700" />
+    <link rel="shortcut icon" href="https://avatars1.githubusercontent.com/u/12997238" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js"
+        integrity="sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g=="
+        crossorigin="anonymous" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-themelist.min.js"
+        integrity="sha512-Y7MEa84tKNdub5CgOzVCI7jCitaDVPUUrSQmoACBnhOxMQUtxSqZllJ5HsYJvJFQXLfqcbGMCzwid0xMaI7MCA=="
+        crossorigin="anonymous" charset="utf-8"></script>
+
+    <link rel="stylesheet" href="/static/web.css">
+    <script src="/static/web.js"></script>
+    <script src="/static/mode-pony.js"></script>
+</head>
+
+<body>
+    <form id="control">
+        <div><button type=button class=primary id=evaluate
+                title="Execute your code (you can also press Ctrl+Enter when editing code)">Run</button><button
+                type=button id=asm title="Compile to ASM">ASM</button><button type=button id=llvm-ir
+                title="Compile to LLVM IR">LLVM IR</button></div><wbr>
+        <div><button type=button id=gist title="Share a link to your code via Gist">Share</button></div><wbr>
+        <div class=right-c-e><button type=button id=configure-editor><span>Configure editor</span></button>
+            <div class=dropdown>
+                <p><label for=keyboard>Keyboard bindings:</label>
                     <select name=keyboard id=keyboard>
                         <option>Ace</option>
                         <option>Emacs</option>
                         <option>Vim</option>
                     </select>
-                    <p><label for=themes>Theme:</label>
+                <p><label for=themes>Theme:</label>
                     <select name=themes id=themes></select>
-                </div
-            ></div>
-        </form>
-        <main>
-            <div id=editor>actor Main
+            </div>
+        </div>
+    </form>
+    <main>
+        <div id=editor>actor Main
   new create(env: Env) =>
     env.out.print("Hello, world!")</div>
-            <div id=result data-empty><div></div><button type=button id=clear-result title="Close this pane">×</button></div>
-        </main>
-    </body>
+        <div id=result data-empty>
+            <div></div><button type=button id=clear-result title="Close this pane">×</button>
+        </div>
+    </main>
+</body>
+
 </html>

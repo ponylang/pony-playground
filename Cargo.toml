@@ -2,22 +2,22 @@
 authors = ["The Pony Project Developers"]
 description = "A web interface for running Pony code"
 license = "MIT"
+edition = "2021"
 name = "pony-playground"
 version = "0.1.0"
 
 [dependencies]
-env_logger = "0.6.0"
-hubcaps = "0.5.0"
-libc = "0.2.0"
-log = "0.4.0"
-rocket = "0.4.2"
-serde = "1.0"
-serde_derive = "1.0"
-tokio = "0.1"
-wait-timeout = "0.2"
-url = "1.7"
+anyhow = "1.0"
+axum = "0.3"
+env_logger = "0.9"
+futures = "0.3"
 
-[dependencies.rocket_contrib]
-version = "0.4.0"
-default-features = false
-features = ["json"]
+# chosing my own fork until gist update support is added to octocrab
+octocrab = {git = "https://github.com/mfelsche/octocrab", rev = "b49c39e" }
+libc = "0.2"
+log = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.13", features = ["full"] }
+wait-timeout = "0.2"
+url = { version = "2.2", "features" = ["serde"] }

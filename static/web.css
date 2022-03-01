@@ -533,11 +533,31 @@ button[disabled]:last-child::before {
 :root .ace-github .ace_marker-layer .ace_selected-word { background: rgba(245, 245, 255, 0.5); }
 :root .ace-github .ace_print-margin { background: rgba(209, 209, 209, 0.5); }
 
-/* rustc output. bright versions of red, yellow, green, cyan and magenta are used, but black, blue and gray could theoretically be added with dim versions of them. */
-.rustc-output {
+/* ponyc output. bright versions of red, yellow, green, cyan and magenta are used, but black, blue and gray could theoretically be added with dim versions of them. */
+pre.output {
     white-space: pre-wrap;
-    padding-bottom: 1em;
-    border-bottom: 1px dashed rgba(0, 0, 0, 0.25);
+}
+
+.output-header {
+    display: flex;
+    color: #bbb;
+    margin-top: 1em;
+}
+
+.output-header::before, .output-header::after {
+    flex: 1 1 auto;
+    border-top: 1px solid #bbb;
+    margin: auto;
+    margin-right: auto;
+    content: '';
+}
+
+.output-header::before {
+    margin-right: 2%;
+}
+
+.output-header::after {
+    margin-left: 2%;
 }
 
 a.linejump {
@@ -546,11 +566,11 @@ a.linejump {
     border-bottom: thin #97248D dotted;
 }
 
-.ace_dark .rustc-output {
+.ace_dark .ponyc-output {
     border-bottom-color: rgba(255, 255, 255, 0.25);
 }
 
-.rustc-output:last-child {
+.ponyc-output:last-child {
     border-bottom: none;
     padding-bottom: none;
 }
