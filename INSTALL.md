@@ -11,6 +11,8 @@ sudo apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
+    gnupg \
+    lsb-release \
     gnupg-agent \
     software-properties-common \
     libssl-dev \
@@ -22,16 +24,22 @@ sudo pip install pygments
 ```
 
 ### Install Docker
+
+See https://docs.docker.com/engine/install/ubuntu/
+
+It boils down to:
+
 ```
+# cleanup old stuff
+sudo apt-get remove docker docker-engine docker.io containerd runc
+
 # add Docker GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-# add Docker "stable" repository.
-sudo add-apt-repository \
-  "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) \
-  stable"
-
+# add docker stable repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 # update to get latest package listings after adding Docker repository
 sudo apt-get update
 
@@ -57,7 +65,7 @@ server {
     server_name playground.ponylang.io;
 
     location / {
-      proxy_pass      http://127.0.0.1:8080;
+      proxy_pass      http://127.0.0.1:8000;
     }
 }
 ```
@@ -97,10 +105,13 @@ curl https://sh.rustup.rs | sh
 
 select `1` from prompt
 
+
+As this file might be outdated, make sure the version here corresponds to the version listed in the `rust-toolchain` file of this repo.
+
 ```
 source /root/.profile
-rustup install nightly-2019-10-11 --force # rustfmt is missing from this nightly
-rustup default nightly-2019-10-11
+rustup install 1.58.1
+rustup default 1.58.1
 ```
 
 ### Build playground image
@@ -135,10 +146,9 @@ Requires=docker.service
 After=network.target
 
 [Service]
-Environment="ROCKET_PORT=8080"
 Environment="GITHUB_TOKEN=..."
 Environment="RUST_LOG=debug"
-ExecStart=/root/pony-playground/target/release/playpen 127.0.0.1
+ExecStart=/root/pony-playground/target/release/playpen
 
 [Install]
 WantedBy=multi-user.target
