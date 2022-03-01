@@ -34,5 +34,5 @@ You should now be able to browse http://127.0.0.1:8000 and interact.
 ## Building for production
 
 ```
-docker run --rm -it -v $HOME/.cargo/registry/ -v $PWD:/home/rust/src ekidd/rust-musl-builder:nightly cargo build --release
+docker run --rm -it -v $HOME/.cargo/registry/ -v $PWD:/home/rust/src ekidd/rust-musl-builder:nightly-2020-09-04 cargo build --release
 ```
