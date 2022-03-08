@@ -15,12 +15,24 @@ pub(crate) async fn create_gist(
     filename: String,
     code: String,
 ) -> Result<Gist> {
-    let gist = client.gists().create().description(description).file(filename, code).public(true).send().await?;
+    let gist = client
+        .gists()
+        .create()
+        .description(description)
+        .file(filename, code)
+        .public(true)
+        .send()
+        .await?;
     Ok(gist)
 }
 
 pub(crate) async fn update_gist(client: &Client, id: &str, description: String) -> Result<Gist> {
-    let gist = client.gists().update(id).description(description).send().await?;
+    let gist = client
+        .gists()
+        .update(id)
+        .description(description)
+        .send()
+        .await?;
     Ok(gist)
 }
 

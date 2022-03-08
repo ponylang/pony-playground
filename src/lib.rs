@@ -20,6 +20,7 @@ pub mod routes;
 pub use github::init_client as init_github_client;
 
 pub struct Playpen;
+
 impl Playpen {
     pub fn new() -> Playpen {
         Playpen
@@ -61,6 +62,12 @@ impl Playpen {
         debug!("{}", String::from_utf8_lossy(result.stderr()));
         let (compiler, output) = Self::parse_output(result.stdout());
         Ok((result, compiler, output))
+    }
+}
+
+impl Default for Playpen {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

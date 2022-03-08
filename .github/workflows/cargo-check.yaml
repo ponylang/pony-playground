@@ -1,0 +1,22 @@
+name: cargo checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  cargo-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          components: rustfmt, clippy
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --all
+

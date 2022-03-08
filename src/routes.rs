@@ -133,9 +133,9 @@ pub async fn create_gist(
 
 // static routes
 
-const APPLICATION_JAVASCRIPT: HeaderValue = HeaderValue::from_static("application/javascript");
-const TEXT_CSS: HeaderValue = HeaderValue::from_static("text/css");
-const TEXT_HTML: HeaderValue = HeaderValue::from_static("text/html");
+static APPLICATION_JAVASCRIPT: HeaderValue = HeaderValue::from_static("application/javascript");
+static TEXT_CSS: HeaderValue = HeaderValue::from_static("text/css");
+static TEXT_HTML: HeaderValue = HeaderValue::from_static("text/html");
 
 pub fn static_content(
     content: &'static [u8],
@@ -148,13 +148,13 @@ pub fn static_content(
 }
 
 pub fn static_js(content: &'static [u8]) -> Result<Response<Body>, StatusCode> {
-    static_content(content, APPLICATION_JAVASCRIPT)
+    static_content(content, APPLICATION_JAVASCRIPT.clone())
 }
 
 pub fn static_css(content: &'static [u8]) -> Result<Response<Body>, StatusCode> {
-    static_content(content, TEXT_CSS)
+    static_content(content, TEXT_CSS.clone())
 }
 
 pub fn static_html(content: &'static [u8]) -> Result<Response<Body>, StatusCode> {
-    static_content(content, TEXT_HTML)
+    static_content(content, TEXT_HTML.clone())
 }
