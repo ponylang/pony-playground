@@ -12,12 +12,14 @@ use std::time::Duration;
 pub use branches::Branch;
 use docker::{Container, RunResult};
 
+pub mod api;
 mod branches;
 mod docker;
-mod github;
-pub mod routes;
+pub(crate) mod github;
+pub(crate) mod routes;
 
 pub use github::init_client as init_github_client;
+pub use github::Client as GithubClient;
 
 pub struct Playpen;
 
@@ -57,9 +59,6 @@ impl Playpen {
     ) -> Result<(RunResult, String, String)> {
         let args = emit.as_opts().iter().map(|x| String::from(*x)).collect();
         let result = Self::exec(branch, "/usr/local/bin/compile.sh", args, code).await?;
-        debug!("{:?}", result.result);
-        debug!("{}", String::from_utf8_lossy(result.stdout()));
-        debug!("{}", String::from_utf8_lossy(result.stderr()));
         let (compiler, output) = Self::parse_output(result.stdout());
         Ok((result, compiler, output))
     }
