@@ -110,8 +110,8 @@ As this file might be outdated, make sure the version here corresponds to the ve
 
 ```
 source /root/.profile
-rustup install 1.58.1
-rustup default 1.58.1
+rustup install 1.60.0
+rustup default 1.60.0
 ```
 
 ### Build playground image
