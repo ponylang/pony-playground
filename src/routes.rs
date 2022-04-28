@@ -60,14 +60,14 @@ pub async fn compile(Json(payload): Json<Compile>) -> Result<Json<Value>, Status
         .unwrap_or(Branch::Release);
 
     match Playpen::compile(branch, payload.code, emit).await {
-        Ok((status, compiler_output, program_stdout)) => Ok(Json(if status.success() {
+        Ok((result, _compiler_output, program_stdout)) => Ok(Json(if result.success() {
             let output = highlight(emit, &program_stdout);
             json!({
                 "result": output,
             })
         } else {
             json!({
-                "error": compiler_output,
+                "error": String::from_utf8_lossy(result.stderr()),
             })
         })),
         Err(e) => {

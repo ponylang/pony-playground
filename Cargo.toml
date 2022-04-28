@@ -18,6 +18,12 @@ libc = "0.2"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1.16", features = ["full"] }
+tokio = { version = "1.17", features = ["full"] }
 wait-timeout = "0.2"
 url = { version = "2.2", "features" = ["serde"] }
+
+[dev-dependencies]
+anyhow = "1.0"
+hyper = { version = "0.14", features = ["client"] }
+env_logger = "0.9"
+portpicker = "0.1"
