@@ -1,8 +1,8 @@
 use anyhow::Result;
 use axum::{
+    extract::Extension,
     routing::{get, post},
     Router, Server,
-    extract::Extension
 };
 
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
