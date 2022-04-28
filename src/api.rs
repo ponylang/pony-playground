@@ -1,8 +1,8 @@
 use anyhow::Result;
-use axum::AddExtensionLayer;
 use axum::{
     routing::{get, post},
     Router, Server,
+    extract::Extension
 };
 
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
@@ -32,7 +32,7 @@ pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> 
         .route("/evaluate.json", post(evaluate))
         .route("/compile.json", post(compile))
         .route("/gist.json", post(create_gist))
-        .layer(AddExtensionLayer::new(github_client))
+        .layer(Extension(github_client))
         .nest("/static", static_routes);
     Ok(Server::bind(&addr)
         .serve(router.into_make_service())
