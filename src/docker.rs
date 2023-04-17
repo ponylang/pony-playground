@@ -80,7 +80,7 @@ impl Container {
             .arg("--interactive")
             .args(
                 &env.iter()
-                    .map(|&(ref k, ref v)| format!("--env={}={}", k, v))
+                    .map(|(k, v)| format!("--env={}={}", k, v))
                     .collect::<Vec<_>>(),
             )
             .arg(name)
@@ -160,7 +160,7 @@ impl Drop for Container {
     fn drop(&mut self) {
         let rt = tokio::runtime::Handle::current();
         let id = self.id.clone();
-        let _ = rt.spawn(
+        rt.spawn(
             Command::new("docker")
                 .arg("rm")
                 .arg("--force")
