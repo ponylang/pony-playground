@@ -4,7 +4,7 @@ Heavily based upon the [rust playpen](https://github.com/rust-lang/rust-playpen)
 
 ## Installation
 
-See [Install.md](Install.md) for installation instructions for a real box.
+See [INSTALL.md](INSTALL.md) for installation instructions for a real box.
 
 ## Running your own Pony-Playpen locally
 
