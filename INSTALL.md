@@ -2,7 +2,7 @@
 
 ## From Ubuntu 18.04
 
-```
+```bash
 # let's update first
 sudo apt-get update
 
@@ -25,11 +25,11 @@ sudo pip install pygments
 
 ### Install Docker
 
-See https://docs.docker.com/engine/install/ubuntu/
+See the [Docker installation directions](https://docs.docker.com/engine/install/ubuntu/).
 
 It boils down to:
 
-```
+```bash
 # cleanup old stuff
 sudo apt-get remove docker docker-engine docker.io containerd runc
 
@@ -49,7 +49,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 ### Webserver setup
 
-```
+```bash
 add-apt-repository ppa:certbot/certbot
 apt-get update
 apt-get install -y nginx python-certbot-nginx
@@ -57,7 +57,7 @@ apt-get install -y nginx python-certbot-nginx
 
 Create /etc/nginx/sites-enabled/playground.ponylang.io.conf
 
-```
+```text
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -70,7 +70,7 @@ server {
 }
 ```
 
-```
+```bash
 rm /etc/nginx/sites-enabled/default
 ln -sf /etc/nginx/sites-available/playground.ponylang.io.conf /etc/nginx/sites-enabled/playground.ponylang.io.conf
 
@@ -79,27 +79,27 @@ nginx -t && nginx -s reload
 
 ### SSL setup
 
-```
+```bash
 certbot --nginx -d playground.ponylang.io -m ponylang.main@gmail.com
 ```
 
 crontab -e
 
-```
+```text
 0 12 * * * /usr/bin/certbot renew --quiet
 05 12 * * * systemctl restart playground
 ```
 
 ### Start docker
 
-```
+```bash
 systemctl enable docker
 systemctl start docker
 ```
 
 ### Install rust
 
-```
+```bash
 curl https://sh.rustup.rs | sh
 ```
 
@@ -108,7 +108,7 @@ select `1` from prompt
 
 As this file might be outdated, make sure the version here corresponds to the version listed in the `rust-toolchain` file of this repo.
 
-```
+```bash
 source /root/.profile
 rustup install 1.60.0
 rustup default 1.60.0
@@ -116,7 +116,7 @@ rustup default 1.60.0
 
 ### Build playground image
 
-```
+```bash
 git clone https://github.com/ponylang/pony-playground.git
 cd pony-playground
 docker build docker --pull -t ponylang-playpen
@@ -131,7 +131,7 @@ Should ONLY be the token, not "user:token"
 
 ### Build it
 
-```
+```bash
 cargo build --release --bin playpen
 ```
 
@@ -139,7 +139,7 @@ cargo build --release --bin playpen
 
 Put the following in the file `/etc/systemd/system/playground.service`, put in the generated GITHUB_TOKEN from above:
 
-```
+```text
 [Unit]
 Description=Pony Playground Systemd Service Unit
 Requires=docker.service
@@ -156,14 +156,14 @@ WantedBy=multi-user.target
 
 ### Enable and Run it
 
-```
+```bash
 systemctl enable playground
 systemctl start playground
 ```
 
 STDOUT and STDERR both go the journal. If you want to investigate logs, use:
 
-```
+```bashP
 journalctl -u playground ...
 ```
 

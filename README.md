@@ -1,3 +1,5 @@
+# Pony Playground
+
 A web interface for running Pony code.
 
 Heavily based upon the [rust playpen](https://github.com/rust-lang/rust-playpen).
@@ -17,26 +19,25 @@ See [INSTALL.md](INSTALL.md) for installation instructions for a real box.
 
 First, create the Docker image that playpen will use:
 
-```
+```bash
 docker build docker -t ponylang-playpen
 ```
 
-Get a github personal access token. Only the `gist` scope needs to be selected.  
-Put it into the `GITHUB_TOKEN` environment variable. 
+Get a github personal access token. Only the `gist` scope needs to be selected.
+Put it into the `GITHUB_TOKEN` environment variable.
 
-```
+```text
  export GITHUB_TOKEN="..."
 ```
 
 It will be used for creating gists with the playgrounds contents.
-If you want to test without a valid token, really all you need to do 
+If you want to test without a valid token, really all you need to do
 is to set the variable to some gibberish.
 
 Next, spin up the server.
 
-```
+```bash
 cargo run --bin playpen
 ```
 
-You should now be able to browse http://127.0.0.1:8000 and play.
-
+You should now be able to browse [localhost on port 8000](http://127.0.0.1:8000) and play.
