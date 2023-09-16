@@ -1,0 +1,16 @@
+name: Docker image builds
+
+on: pull_request
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-docker-image-builds:
+    name: Validate Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Docker build
+        run: "docker build --pull docker/."

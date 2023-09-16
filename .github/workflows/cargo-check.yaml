@@ -1,4 +1,4 @@
-name: cargo checks
+name: Cargo checks
 
 on:
   pull_request:
