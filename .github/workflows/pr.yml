@@ -1,0 +1,31 @@
+name: PR
+
+on: pull_request
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  superlinter:
+    name: Lint bash, docker, markdown, and yaml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint codebase
+        uses: docker://github/super-linter:v3.8.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_BASH: true
+          VALIDATE_DOCKERFILE: true
+          VALIDATE_MD: true
+          VALIDATE_YAML: true
+
+  validate-docker-image-builds:
+    name: Validate Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Docker build
+        run: "docker build --pull docker/."
