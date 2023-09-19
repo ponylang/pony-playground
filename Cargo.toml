@@ -8,11 +8,11 @@ version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0"
-axum = "0.5"
+axum = "0.6"
 env_logger = "0.10"
 futures = "0.3"
 
-octocrab = "0.19"
+octocrab = "0.30"
 libc = "0.2"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
