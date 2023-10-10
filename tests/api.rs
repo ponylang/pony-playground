@@ -13,10 +13,10 @@ async fn evaluate() -> Result<()> {
     let _ = env_logger::try_init();
     let port = portpicker::pick_unused_port().expect("No port available");
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    let serve_addr = addr.clone();
+    let serve_addr = addr;
     let gh_client = init_github_client("FOO".to_string())?;
     let handle: JoinHandle<Result<()>> =
-        tokio::spawn(async move { Ok(serve(serve_addr, gh_client).await?) });
+        tokio::spawn(async move { serve(serve_addr, gh_client).await });
     // TODO: how to better ensure the background task is already serving?
     tokio::time::sleep(Duration::from_secs(1)).await;
     let client = Client::new();
@@ -65,10 +65,10 @@ async fn compile() -> Result<()> {
     let _ = env_logger::try_init();
     let port = portpicker::pick_unused_port().expect("No port available");
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    let serve_addr = addr.clone();
+    let serve_addr = addr;
     let gh_client = init_github_client("FOO".to_string())?;
     let handle: JoinHandle<Result<()>> =
-        tokio::spawn(async move { Ok(serve(serve_addr, gh_client).await?) });
+        tokio::spawn(async move { serve(serve_addr, gh_client).await });
     // TODO: how to better ensure the background task is already serving?
     tokio::time::sleep(Duration::from_secs(1)).await;
     let client = Client::new();

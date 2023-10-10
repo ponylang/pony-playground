@@ -106,12 +106,12 @@ curl https://sh.rustup.rs | sh
 select `1` from prompt
 
 
-As this file might be outdated, make sure the version here corresponds to the version listed in the `rust-toolchain` file of this repo.
+As this file might be outdated, make sure the version here corresponds to the version listed in the `rust-toolchain.toml` file of this repo.
 
 ```bash
 source /root/.profile
-rustup install 1.60.0
-rustup default 1.60.0
+rustup install 1.72.1
+rustup default 1.72.1
 ```
 
 ### Build playground image
@@ -147,7 +147,7 @@ After=network.target
 
 [Service]
 Environment="GITHUB_TOKEN=..."
-Environment="RUST_LOG=debug"
+Environment="RUST_LOG=info"
 ExecStart=/root/pony-playground/target/release/playpen
 
 [Install]

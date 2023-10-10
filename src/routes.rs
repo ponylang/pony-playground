@@ -5,7 +5,7 @@ use crate::{highlight, Branch, Playpen};
 use anyhow::Result;
 use axum::{
     body::Body,
-    extract::{Extension, Json},
+    extract::{Json, State},
     http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
 };
 use serde::Deserialize;
@@ -87,8 +87,8 @@ pub struct CreateGist {
 
 /// create a gist
 pub async fn create_gist(
+    State(client): State<Client>,
     Json(payload): Json<CreateGist>,
-    Extension(client): Extension<Client>,
 ) -> Result<Json<Value>, StatusCode> {
     match github::create_gist(
         &client,

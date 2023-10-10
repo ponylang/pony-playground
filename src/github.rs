@@ -37,6 +37,10 @@ pub(crate) async fn update_gist(client: &Client, id: &str, description: String) 
 }
 
 pub fn init_client(token: String) -> Result<Client> {
-    octocrab::initialise(octocrab::Octocrab::builder().personal_token(token))?;
+    octocrab::initialise(
+        octocrab::Octocrab::builder()
+            .personal_token(token)
+            .build()?,
+    );
     Ok(octocrab::instance())
 }
