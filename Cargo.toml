@@ -23,6 +23,6 @@ url = { version = "2.4", "features" = ["serde"] }
 
 [dev-dependencies]
 anyhow = "1.0"
-hyper = { version = "0.14", features = ["client"] }
+hyper = { version = "1.0", features = ["client"] }
 env_logger = "0.10"
 portpicker = "0.1"
