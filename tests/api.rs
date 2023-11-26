@@ -1,8 +1,7 @@
 use anyhow::Result;
-use hyper::body::Buf;
-use hyper::{Body, Client, Method, Request, StatusCode};
 use pony_playground::api::serve;
 use pony_playground::init_github_client;
+use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::time::Duration;
@@ -25,18 +24,14 @@ async fn evaluate() -> Result<()> {
         code: "actor Main\n  new create(env: Env) => env.out.print(U32(42).string())".to_string(),
         branch: None,
     };
-    let req = Request::builder()
-        .method(Method::POST)
-        .uri(format!("http://127.0.0.1:{port}/evaluate.json"))
+    let req = client
+        .post(format!("http://127.0.0.1:{port}/evaluate.json"))
         .header("content-type", "application/json")
-        .body(Body::from(serde_json::to_vec(&req_data)?))?;
-    let res = client.request(req).await?;
-    let (parts, body) = res.into_parts();
-    assert_eq!(StatusCode::OK, parts.status);
-    let body = hyper::body::aggregate(body).await?;
+        .body(serde_json::to_vec(&req_data)?);
+    let res = req.send().await?;
+    assert_eq!(StatusCode::OK, res.status());
 
-    // try to parse as json with serde_json
-    let payload: EvaluateOutput = serde_json::from_reader(body.reader())?;
+    let payload = res.json::<EvaluateOutput>().await?;
     assert!(payload.success);
     assert!(payload.compiler.contains("Compiled with: LLVM"));
     assert_eq!("42\n", payload.stdout);
@@ -79,17 +74,14 @@ async fn compile() -> Result<()> {
         code: "actor Main\n  new create(env: Env) => None".to_string(),
         branch: None,
     };
-    let req = Request::builder()
-        .method(Method::POST)
-        .uri(format!("http://127.0.0.1:{port}/compile.json"))
+    let req = client
+        .post(format!("http://127.0.0.1:{port}/compile.json"))
         .header("content-type", "application/json")
-        .body(Body::from(serde_json::to_vec(&req_data)?))?;
-    let res = client.request(req).await?;
-    let (parts, body) = res.into_parts();
-    assert_eq!(StatusCode::OK, parts.status);
-    let body = hyper::body::aggregate(body).await?;
+        .body(serde_json::to_vec(&req_data)?);
+    let res = req.send().await?;
+    assert_eq!(StatusCode::OK, res.status());
 
-    let payload: CompileOutput = serde_json::from_reader(body.reader())?;
+    let payload: CompileOutput = res.json().await?;
     assert!(payload.error.is_none());
     assert!(payload
         .result
@@ -102,17 +94,14 @@ async fn compile() -> Result<()> {
         code: "actor Main\n  new create(env: Env) => None".to_string(),
         branch: None,
     };
-    let req = Request::builder()
-        .method(Method::POST)
-        .uri(format!("http://127.0.0.1:{port}/compile.json"))
+    let req = client
+        .post(format!("http://127.0.0.1:{port}/compile.json"))
         .header("content-type", "application/json")
-        .body(Body::from(serde_json::to_vec(&req_data)?))?;
-    let res = client.request(req).await?;
-    let (parts, body) = res.into_parts();
-    assert_eq!(StatusCode::OK, parts.status);
-    let body = hyper::body::aggregate(body).await?;
+        .body(serde_json::to_vec(&req_data)?);
+    let res = req.send().await?;
+    assert_eq!(StatusCode::OK, res.status());
 
-    let payload: CompileOutput = serde_json::from_reader(body.reader())?;
+    let payload: CompileOutput = res.json().await?;
     assert!(payload.error.is_none());
     assert!(payload
         .result
@@ -125,17 +114,14 @@ async fn compile() -> Result<()> {
         code: "actor Maine\n  new create(env: Env) => None".to_string(),
         branch: None,
     };
-    let req = Request::builder()
-        .method(Method::POST)
-        .uri(format!("http://127.0.0.1:{port}/compile.json"))
+    let req = client
+        .post(format!("http://127.0.0.1:{port}/compile.json"))
         .header("content-type", "application/json")
-        .body(Body::from(serde_json::to_vec(&req_data)?))?;
-    let res = client.request(req).await?;
-    let (parts, body) = res.into_parts();
-    assert_eq!(StatusCode::OK, parts.status);
-    let body = hyper::body::aggregate(body).await?;
+        .body(serde_json::to_vec(&req_data)?);
+    let res = req.send().await?;
+    assert_eq!(StatusCode::OK, res.status());
 
-    let payload: CompileOutput = serde_json::from_reader(body.reader())?;
+    let payload: CompileOutput = res.json().await?;
     assert!(payload.result.is_none());
     assert!(payload
         .error
