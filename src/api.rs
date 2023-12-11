@@ -1,7 +1,7 @@
 use anyhow::Result;
 use axum::{
     routing::{get, post},
-    Router, Server,
+    Router
 };
 
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
@@ -33,7 +33,6 @@ pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> 
         .route("/gist.json", post(create_gist))
         .with_state(github_client)
         .nest("/static", static_routes);
-    Ok(Server::bind(&addr)
-        .serve(router.into_make_service())
-        .await?)
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    Ok(axum::serve(listener, router).await?)
 }
