@@ -292,6 +292,23 @@
         );
     }
 
+    function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
+        session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/cmain/code-samples/actors-behaviors.pony" + snippet_file_name + " ...");
+        httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/" + snippet_file_name, null, 200,
+            function (response) {
+                session.setValue(response);
+
+                if (do_evaluate) {
+                    doEvaluate();
+                }
+            },
+            function (status, response) {
+                set_result(result, "<p class=error>Failed to fetch snippet" +
+                    "<p class=error-explanation>Are you connected to the Internet?");
+            }
+        );
+    }
+
     function getQueryParameters() {
         var a = window.location.search.substr(1).split('&');
         if (a === "") return {};
@@ -518,6 +535,10 @@
         } else if ("gist" in query) {
             // fetchGist() must defer evaluation until after the content has been loaded
             fetchGist(session, result, query.gist, query.run === "1", evaluateButton);
+            query.run = 0;
+        } else if ("snippet" in query) {
+            // fetchSnippet() must defer evaluation until after the content has been loaded
+            fetchSnippet(session, result, query.snippet, query.run === "1", evaluateButton);
             query.run = 0;
         } else {
             var code = optionalLocalStorageGetItem("code");
