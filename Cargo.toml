@@ -12,7 +12,7 @@ axum = "0.7"
 env_logger = "0.11"
 futures = "0.3"
 
-octocrab = "0.33"
+octocrab = "0.38"
 libc = "0.2"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
