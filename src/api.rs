@@ -7,6 +7,12 @@ use axum::{
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
 use crate::GithubClient;
 use std::net::SocketAddr;
+use http::HeaderValue;
+use tower_http::cors::CorsLayer;
+
+let layer = CorsLayer::new().allow_origin(
+    "https://tutorial.ponylang.io".parse::<HeaderValue>().unwrap(),
+);
 
 /// serve the api
 pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> {
@@ -24,11 +30,12 @@ pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> 
             get(|| async { static_js(include_bytes!("../static/mode-pony.js")) }),
         );
     let router = Router::new()
+        .route("/evaluate.json", post(evaluate))
+        .layer(layer) // applies to every route() call before on `router`
         .route(
             "/",
             get(|| async { static_html(include_bytes!("../static/web.html")) }),
         )
-        .route("/evaluate.json", post(evaluate))
         .route("/compile.json", post(compile))
         .route("/gist.json", post(create_gist))
         .with_state(github_client)
