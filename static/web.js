@@ -293,7 +293,7 @@
     }
 
     function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
-        session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/cmain/code-samples/actors-behaviors.pony" + snippet_file_name + " ...");
+        session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/cmain/code-samples/" + snippet_file_name + " ...");
         httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/" + snippet_file_name, null, 200,
             function (response) {
                 session.setValue(response);
