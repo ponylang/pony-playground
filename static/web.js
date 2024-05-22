@@ -180,12 +180,10 @@
 
             var div = document.createElement("p");
             div.className = "message";
-            if (object.success) {
-                if (object.stdout || object.stderr) {
-                    div.textContent = "Program ended.";
-                } else {
-                    div.textContent = "Program ended with no output.";
-                }
+            if (object.success && (object.stdout || object.stderr)) {
+                div.textContent = "Program ended.";
+            } else if (object.success) {
+                div.textContent = "Program ended with no output.";
             } else {
                 div.textContent = "Compilation failed.";
             }
