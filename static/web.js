@@ -23,14 +23,7 @@
     function build_themes(themelist) {
         // Load all ace themes, sorted by their proper name.
         var themes = themelist.themes;
-        themes.sort(function (a, b) {
-            if (a.caption < b.caption) {
-                return -1;
-            } else if (a.caption > b.caption) {
-                return 1;
-            }
-            return 0;
-        });
+        themes.sort((a, b) => a.caption.localeCompare(b.caption));
 
         var themeopt,
             themefrag = document.createDocumentFragment();
