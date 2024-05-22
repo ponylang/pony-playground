@@ -311,7 +311,6 @@
             options.body = data;
         }
         const response = await fetch(url, options);
-        //const responseText = await response.text()
         if (response.status == expect && on_success instanceof Function) {
             on_success(response);
         }
