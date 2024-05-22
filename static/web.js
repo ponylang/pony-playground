@@ -27,10 +27,10 @@
 
         var themeopt,
             themefrag = document.createDocumentFragment();
-        for (var i = 0; i < themes.length; i++) {
+        for (const theme of themes) {
             themeopt = document.createElement("option");
-            themeopt.setAttribute("val", themes[i].theme);
-            themeopt.textContent = themes[i].caption;
+            themeopt.setAttribute("val", theme.theme);
+            themeopt.textContent = theme.caption;
             themefrag.appendChild(themeopt);
         }
         document.getElementById("themes").appendChild(themefrag);
@@ -258,9 +258,9 @@
                 response = JSON.parse(response);
                 if (response) {
                     var files = response.files;
-                    for (var name in files) {
+                    for (const [ name, file ] of files.entries()) {
                         if (files.hasOwnProperty(name)) {
-                            session.setValue(files[name].content);
+                            session.setValue(file.content);
 
                             if (do_evaluate) {
                                 doEvaluate();
@@ -345,8 +345,7 @@
 
     function getRadioValue(name) {
         var nodes = document.getElementsByName(name);
-        for (var i = 0; i < nodes.length; i++) {
-            var node = nodes[i];
+        for (const node of nodes) {
             if (node.checked) {
                 return node.value;
             }
