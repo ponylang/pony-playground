@@ -67,10 +67,8 @@
             }
         };
         request.timeout = 20000;
-        request.ontimeout = function () {
-            set_result(result, "<p class=error>Connection timed out" +
+        request.ontimeout = set_result.bind(window, result, "<p class=error>Connection timed out" +
                 "<p class=error-explanation>Are you connected to the Internet?");
-        };
         request.send(JSON.stringify(data));
     }
 
@@ -590,31 +588,20 @@
         delete transposeletters.bindKey;
         editor.commands.addCommand(transposeletters);
 
-        asmButton.onclick = function () {
-            compile("asm", result, session.getValue(), asmButton);
-        };
+        asmButton.onclick = compile.bind(window, "asm", result, session.getValue(), asmButton);
 
-        irButton.onclick = function () {
-            compile("llvm-ir", result, session.getValue(), irButton);
-        };
+        irButton.onclick = compile.bind(window, "llvm-ir", result, session.getValue(), irButton);
 
-        gistButton.onclick = function () {
-            shareGist(result, session.getValue(), gistButton);
-        };
+        gistButton.onclick = shareGist.bind(window, result, session.getValue(), gistButton);
 
         configureEditorButton.onclick = function () {
             var dropdown = configureEditorButton.nextElementSibling;
             dropdown.style.display = dropdown.style.display ? "" : "block";
         };
 
-        clearResultButton.onclick = function () {
-            clear_result(result);
-        };
+        clearResultButton.onclick = clear_result.bind(window, result);
 
-        themes.onkeyup = themes.onchange = function () {
-            set_theme(editor, themelist, themes.options[themes.selectedIndex].text);
-        };
-
+        themes.onkeyup = themes.onchange = set_theme.bind(window, editor, themelist, themes.options[themes.selectedIndex].text);
     }, false);
 }());
 
