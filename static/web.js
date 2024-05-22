@@ -330,15 +330,14 @@
         var themes = document.getElementById("themes");
         var themepath = null,
             i = 0,
-            themelen = themelist.themes.length,
             selected = themes.options[themes.selectedIndex];
         if (selected.textContent === theme) {
             themepath = selected.getAttribute("val");
         } else {
-            for (i; i < themelen; i++) {
-                if (themelist.themes[i].caption == theme) {
+            for (const [ i, currentTheme ] of themelist.themes.entries()) {
+                if (currentTheme.caption == theme) {
                     themes.selectedIndex = i;
-                    themepath = themelist.themes[i].theme;
+                    themepath = currentTheme.theme;
                     break;
                 }
             }
