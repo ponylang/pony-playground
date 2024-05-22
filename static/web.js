@@ -312,10 +312,10 @@
         }
         const response = await fetch(url, options);
         //const responseText = await response.text()
-        if (response.status == expect && on_success) {
+        if (response.status == expect && on_success instanceof Function) {
             on_success(response);
         }
-        if (response.status != expect && on_fail) {
+        if (response.status != expect && on_fail instanceof Function) {
             on_fail(response.status, response);
         }
       }
