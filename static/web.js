@@ -63,42 +63,47 @@
      * @param {HTMLDivElement} result 
      * @returns {void}
      */
-    function send(path, data, callback, button, message, result) {
+    async function send(path, data, callback, button, message, result) {
+        let response, json;
         button.disabled = true;
 
         set_result(result, "<p class=message>" + message);
 
-        const request = new XMLHttpRequest();
-        request.open("POST", path, true);
-        request.setRequestHeader("Content-Type", "application/json");
-        request.onreadystatechange = function () {
-            button.disabled = false;
-            if (request.readyState !== XMLHttpRequest.DONE) {
-                return
-            }
-
-            let json;
-
-            try {
-                json = JSON.parse(request.response);
-            } catch (e) {
-                console.log("JSON.parse(): " + e);
-            }
-
-            if (request.status === 200) {
-                callback(json);
-            } else if (request.status === 0) {
-                set_result(result, "<p class=error>Connection failure" +
-                    "<p class=error-explanation>Are you connected to the Internet?");
+        try {
+            response = await fetch(path, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                signal: AbortSignal.timeout(5000),
+                body: JSON.stringify(data),
+            });
+        } catch(err) {
+            if ((err instanceof DOMException) && err.name === "AbortError") {
+                set_result(window, result, "<p class=error>Connection timed out" +
+                "<p class=error-explanation>Are you connected to the Internet?");
             } else {
                 set_result(result, "<p class=error>Something went wrong" +
-                    "<p class=error-explanation>The HTTP request produced a response with status code " + request.status + ".");
+                        "<p class=error-explanation>The HTTP request produced an error with message " + err.message + ".");
             }
-        };
-        request.timeout = 20000;
-        request.ontimeout = set_result.bind(window, result, "<p class=error>Connection timed out" +
-                "<p class=error-explanation>Are you connected to the Internet?");
-        request.send(JSON.stringify(data));
+        }
+        button.disabled = false;
+
+        try {
+            json = await response.json();
+        } catch (e) {
+            console.log("JSON.parse(): " + e);
+        }
+
+        if (response.status === 200) {
+            callback(json);
+        } else if (response.status === 0) {
+            set_result(result, "<p class=error>Connection failure" +
+                        "<p class=error-explanation>Are you connected to the Internet?");
+        } else {
+            set_result(result, "<p class=error>Something went wrong" +
+                        "<p class=error-explanation>The HTTP request produced a response with status code " + response.status + ".");
+        }
     }
 
     const PYGMENTS_TO_ACE_MAPPINGS = {
@@ -298,25 +303,22 @@
      * @param {Function} on_fail 
      * @return {void}
      */
-    function httpRequest(method, url, data, expect, on_success, on_fail) {
-        const req = new XMLHttpRequest();
-
-        req.open(method, url, true);
-        req.onreadystatechange = function () {
-            if (req.status == expect && on_success) {
-                on_success(req.responseText);
-            }
-            if (req.status != expect && on_fail) {
-                on_fail(req.status, req.responseText);
-            }
+    async function httpRequest(method, url, data, expect, on_success, on_fail) {
+        const options = {
+            method,          
         };
-
-        if (method === "GET") {
-            req.send();
-        } else if (method === "POST") {
-            req.send(data);
+        if (method === 'POST') {
+            options.body = data;
         }
-    }
+        const response = await fetch(url, options);
+        //const responseText = await response.text()
+        if (response.status == expect && on_success) {
+            on_success(response);
+        }
+        if (response.status != expect && on_fail) {
+            on_fail(response.status, response);
+        }
+      }
 
     /**
      * 
@@ -330,8 +332,8 @@
     function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) { // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
         session.setValue("// Loading Gist: https://gist.github.com/" + gist_id + " ...");
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
-            function (response) {
-                response = JSON.parse(response);
+            async function (response) {
+                response = await response.json();
                 if (!response) {
                     return;
                 }
