@@ -336,8 +336,8 @@
                     return;
                 }
 
-                var files = response.files;
-                for (const [ name, file ] of files.entries()) {
+                const files = response.files;
+                for (const [ name, file ] of Object.entries(files)) {
                     if (!files.hasOwnProperty(name)) {
                         continue;
                     }
