@@ -284,12 +284,12 @@
 
     function clear_result(result) {
         result.innerHTML = "";
-        result.parentNode.setAttribute("data-empty", "");
+        result.parentNode.dataset.empty = "";
         set_result.editor.resize();
     }
 
     function set_result(result, contents) {
-        result.parentNode.removeAttribute("data-empty");
+        delete result.parentNode.dataset.empty;
         if (contents === undefined) {
             result.textContent = "";
         } else if (typeof contents == "string") {
