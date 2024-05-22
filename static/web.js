@@ -629,20 +629,22 @@ function editGo(r1, c1) {
 }
 
 function editRestore() {
-    if (old_range) {
-        const e = editorGet();
-        e.selection.setSelectionRange(old_range, false);
-        const mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
-        const intmid = Math.round(mid);
-        const extra = (intmid - mid) * 2 + 2;
-        const up = e.getFirstVisibleRow() - old_range.start.row + extra;
-        const down = old_range.end.row - e.getLastVisibleRow() + extra;
-        if (up > 0) {
-            e.scrollToLine(mid - up, true, true);
-        } else if (down > 0) {
-            e.scrollToLine(mid + down, true, true);
-        } // else visible enough
+    if (!old_range) {
+        return
     }
+
+    const e = editorGet();
+    e.selection.setSelectionRange(old_range, false);
+    const mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
+    const intmid = Math.round(mid);
+    const extra = (intmid - mid) * 2 + 2;
+    const up = e.getFirstVisibleRow() - old_range.start.row + extra;
+    const down = old_range.end.row - e.getLastVisibleRow() + extra;
+    if (up > 0) {
+        e.scrollToLine(mid - up, true, true);
+    } else if (down > 0) {
+        e.scrollToLine(mid + down, true, true);
+    } // else visible enough
 }
 
 function editShowRegion(r1, c1, r2, c2) {
