@@ -536,9 +536,9 @@
             // fetchGist() must defer evaluation until after the content has been loaded
             fetchGist(session, result, query.gist, query.run === "1", evaluateButton);
             query.run = 0;
-        } else if ("snippet" in query) {
+        } else if (query.has("snippet")) {
             // fetchSnippet() must defer evaluation until after the content has been loaded
-            fetchSnippet(session, result, query.snippet, query.run === "1", evaluateButton);
+            fetchSnippet(session, result, query.get("snippet"), query.get("run") === "1", evaluateButton);
             query.run = 0;
         } else {
             var code = optionalLocalStorageGetItem("code");
