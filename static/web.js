@@ -46,24 +46,26 @@
         request.setRequestHeader("Content-Type", "application/json");
         request.onreadystatechange = function () {
             button.disabled = false;
-            if (request.readyState == 4) {
-                var json;
+            if (request.readyState != 4) {
+                return
+            }
 
-                try {
-                    json = JSON.parse(request.response);
-                } catch (e) {
-                    console.log("JSON.parse(): " + e);
-                }
+            var json;
 
-                if (request.status == 200) {
-                    callback(json);
-                } else if (request.status === 0) {
-                    set_result(result, "<p class=error>Connection failure" +
-                        "<p class=error-explanation>Are you connected to the Internet?");
-                } else {
-                    set_result(result, "<p class=error>Something went wrong" +
-                        "<p class=error-explanation>The HTTP request produced a response with status code " + request.status + ".");
-                }
+            try {
+                json = JSON.parse(request.response);
+            } catch (e) {
+                console.log("JSON.parse(): " + e);
+            }
+
+            if (request.status == 200) {
+                callback(json);
+            } else if (request.status === 0) {
+                set_result(result, "<p class=error>Connection failure" +
+                    "<p class=error-explanation>Are you connected to the Internet?");
+            } else {
+                set_result(result, "<p class=error>Something went wrong" +
+                    "<p class=error-explanation>The HTTP request produced a response with status code " + request.status + ".");
             }
         };
         request.timeout = 20000;
@@ -256,18 +258,22 @@
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
             function (response) {
                 response = JSON.parse(response);
-                if (response) {
-                    var files = response.files;
-                    for (const [ name, file ] of files.entries()) {
-                        if (files.hasOwnProperty(name)) {
-                            session.setValue(file.content);
+                if (!response) {
+                    return;
+                }
 
-                            if (do_evaluate) {
-                                doEvaluate();
-                            }
-                            break;
-                        }
+                var files = response.files;
+                for (const [ name, file ] of files.entries()) {
+                    if (!files.hasOwnProperty(name)) {
+                        continue;
                     }
+
+                    session.setValue(file.content);
+
+                    if (do_evaluate) {
+                        doEvaluate();
+                    }
+                    break;
                 }
             },
             function (status, response) {
