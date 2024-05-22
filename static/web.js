@@ -46,7 +46,7 @@
         request.setRequestHeader("Content-Type", "application/json");
         request.onreadystatechange = function () {
             button.disabled = false;
-            if (request.readyState !== 4) {
+            if (request.readyState !== XMLHttpRequest.DONE) {
                 return
             }
 
