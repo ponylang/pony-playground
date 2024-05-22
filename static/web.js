@@ -514,9 +514,7 @@
             doEvaluate();
         }
 
-        addEventListener("resize", function () {
-            editor.resize();
-        });
+        addEventListener("resize", editor.resize);
 
         //This helps re-focus editor after a Run or any other action that caused
         //editor to lose focus. Just press Enter or Esc key to focus editor.
