@@ -293,15 +293,8 @@
     }
 
     function getQueryParameters() {
-        var a = window.location.search.substr(1).split('&');
-        if (a === "") return {};
-        var b = {};
-        for (var i = 0; i < a.length; i++) {
-            var p = a[i].split('=');
-            if (p.length != 2) continue;
-            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-        }
-        return b;
+        let url = new URL(window.location);
+        return url.searchParams;
     }
 
     function clear_result(result) {
@@ -513,12 +506,12 @@
         }
 
         query = getQueryParameters();
-        if ("code" in query) {
-            session.setValue(query.code);
-        } else if ("gist" in query) {
+        if (query.has("code")) {
+            session.setValue(query.get("code"));
+        } else if (query.has("gist")) {
             // fetchGist() must defer evaluation until after the content has been loaded
-            fetchGist(session, result, query.gist, query.run === "1", evaluateButton);
-            query.run = 0;
+            fetchGist(session, result, query.get("gist"), query.get("run") === "1", evaluateButton);
+            query.set("run", 0);
         } else {
             var code = optionalLocalStorageGetItem("code");
             if (code !== null) {
@@ -526,11 +519,11 @@
             }
         }
 
-        if ("branch" in query) {
-            branch = query.branch
+        if (query.has("branch")) {
+            branch = query.get("branch")
         }
 
-        if (query.run === "1") {
+        if (query.get("run") === "1") {
             doEvaluate();
         }
 
