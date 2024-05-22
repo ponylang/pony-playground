@@ -22,10 +22,10 @@
 
     function build_themes(themelist) {
         // Load all ace themes, sorted by their proper name.
-        var themes = themelist.themes;
+        const themes = themelist.themes;
         themes.sort((a, b) => a.caption.localeCompare(b.caption));
 
-        var themeopt,
+        let themeopt,
             themefrag = document.createDocumentFragment();
         for (const theme of themes) {
             themeopt = document.createElement("option");
@@ -41,7 +41,7 @@
 
         set_result(result, "<p class=message>" + message);
 
-        var request = new XMLHttpRequest();
+        const request = new XMLHttpRequest();
         request.open("POST", path, true);
         request.setRequestHeader("Content-Type", "application/json");
         request.onreadystatechange = function () {
@@ -50,7 +50,7 @@
                 return
             }
 
-            var json;
+            let json;
 
             try {
                 json = JSON.parse(request.response);
@@ -74,7 +74,7 @@
         request.send(JSON.stringify(data));
     }
 
-    var PYGMENTS_TO_ACE_MAPPINGS = {
+    const PYGMENTS_TO_ACE_MAPPINGS = {
         'asm': {
             'c': 'ace_comment', // Comment,
             'na': 'ace_support ace_function ace_directive', // Name.Attribute,
@@ -104,9 +104,9 @@
     };
 
     function rehighlight(pygmentized, language) {
-        var mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
+        const mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
         return pygmentized.replace(/<span class="([^"]*)">([^<]*)<\/span>/g, function () {
-            var classes = mappings[arguments[1]];
+            const classes = mappings[arguments[1]];
             if (classes) {
                 return '<span class="' + classes + '">' + arguments[2] + '</span>';
             }
@@ -130,7 +130,7 @@
             color: true,
             branch: branch
         }, function (object) {
-            var samp, pre, h;
+            let samp, pre, h;
             set_result(result);
             if (object.compiler) {
                 h = document.createElement("span");
@@ -178,7 +178,7 @@
                 result.appendChild(pre);
             }
 
-            var div = document.createElement("p");
+            const div = document.createElement("p");
             div.className = "message";
             if (object.success && (object.stdout || object.stderr)) {
                 div.textContent = "Program ended.";
@@ -214,10 +214,10 @@
             base_url: PLAYPEN_URL,
             branch: branch,
         }, function (response) {
-            var gist_id = response.gist_id;
-            var gist_url = response.gist_url;
+            const gist_id = response.gist_id;
+            const gist_url = response.gist_url;
 
-            var play_url = PLAYPEN_URL + "/?gist=" + encodeURIComponent(gist_id);
+            const play_url = PLAYPEN_URL + "/?gist=" + encodeURIComponent(gist_id);
 
             if (branch != "release") {
                 play_url += "&branch=" + branch;
@@ -232,7 +232,7 @@
     }
 
     function httpRequest(method, url, data, expect, on_success, on_fail) {
-        var req = new XMLHttpRequest();
+        const req = new XMLHttpRequest();
 
         req.open(method, url, true);
         req.onreadystatechange = function () {
@@ -282,7 +282,7 @@
     }
 
     function getQueryParameters() {
-        let url = new URL(window.location);
+        const url = new URL(window.location);
         return url.searchParams;
     }
 
@@ -312,7 +312,7 @@
             editor.setKeyboardHandler("ace/keyboard/vim");
             if (!set_keyboard.vim_set_up) {
                 ace.config.loadModule("ace/keyboard/vim", function (m) {
-                    var Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
+                    const Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
                     Vim.defineEx("write", "w", function (cm, input) {
                         cm.ace.execCommand("evaluate");
                     });
@@ -325,8 +325,8 @@
     }
 
     function set_theme(editor, themelist, theme) {
-        var themes = document.getElementById("themes");
-        var themepath = null,
+        const themes = document.getElementById("themes");
+        let themepath = null,
             i = 0,
             selected = themes.options[themes.selectedIndex];
         if (selected.textContent === theme) {
@@ -347,7 +347,7 @@
     }
 
     function getRadioValue(name) {
-        var nodes = document.getElementsByName(name);
+        const nodes = document.getElementsByName(name);
         for (const node of nodes) {
             if (node.checked) {
                 return node.value;
@@ -355,29 +355,29 @@
         }
     }
 
-    var evaluateButton;
-    var asmButton;
-    var irButton;
-    var formatButton;
-    var gistButton;
-    var configureEditorButton;
-    var result;
-    var clearResultButton;
-    var keyboard;
-    var themes;
-    var editor;
-    var session;
-    var themelist;
-    var theme;
-    var mode;
-    var query;
+    let evaluateButton;
+    let asmButton;
+    let irButton;
+    let formatButton;
+    let gistButton;
+    let configureEditorButton;
+    let result;
+    let clearResultButton;
+    let keyboard;
+    let themes;
+    let editor;
+    let session;
+    let themelist;
+    let theme;
+    let mode;
+    let query;
 
     function doEvaluate() {
         var code = session.getValue();
         evaluate(result, session.getValue(), evaluateButton);
     }
 
-    var COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+    const COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
 
     // A simple function to decode ANSI escape codes into HTML.
     // This is very basic, with lots of very obvious omissions and holes;
@@ -561,15 +561,15 @@
         editor.commands.addCommand({
             name: "rust_no_single_quote_autopairing",
             exec: function (editor, line) {
-                var sess = editor.getSession();
-                var doc = sess.getDocument();
-                var selection = sess.getSelection();
-                var ranges = selection.getAllRanges();
-                var prev_range = null;
+                const sess = editor.getSession();
+                const doc = sess.getDocument();
+                const selection = sess.getSelection();
+                const ranges = selection.getAllRanges();
+                let prev_range = null;
 
                 // no selection = zero width range, so we don't need to handle this case specially
                 // start from the back, so changes to earlier ranges don't invalidate later ranges
-                for (var i = ranges.length - 1; i >= 0; i--) {
+                for (const i = ranges.length - 1; i >= 0; i--) {
                     // sanity check: better to do no modification than to do something wrong
                     // see the compareRange docs:
                     // https://github.com/ajaxorg/ace/blob/v1.2.6/lib/ace/range.js#L106-L120
@@ -589,7 +589,7 @@
 
         // We’re all pretty much agreed that such an obscure command as transposing
         // letters hogging Ctrl-T, normally “open new tab”, is a bad thing.
-        var transposeletters = editor.commands.commands.transposeletters;
+        const transposeletters = editor.commands.commands.transposeletters;
         editor.commands.removeCommand("transposeletters");
         delete transposeletters.bindKey;
         editor.commands.addCommand(transposeletters);
@@ -601,7 +601,7 @@
         gistButton.onclick = shareGist.bind(window, result, session.getValue(), gistButton);
 
         configureEditorButton.onclick = function () {
-            var dropdown = configureEditorButton.nextElementSibling;
+            const dropdown = configureEditorButton.nextElementSibling;
             dropdown.style.display = dropdown.style.display ? "" : "block";
         };
 
@@ -620,7 +620,7 @@ function editorGet() {
 }
 
 function editGo(r1, c1) {
-    var e = editorGet();
+    const e = editorGet();
     old_range = undefined;
     e.focus();
     e.selection.clearSelection();
@@ -630,13 +630,13 @@ function editGo(r1, c1) {
 
 function editRestore() {
     if (old_range) {
-        var e = editorGet();
+        const e = editorGet();
         e.selection.setSelectionRange(old_range, false);
-        var mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
-        var intmid = Math.round(mid);
-        var extra = (intmid - mid) * 2 + 2;
-        var up = e.getFirstVisibleRow() - old_range.start.row + extra;
-        var down = old_range.end.row - e.getLastVisibleRow() + extra;
+        const mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
+        const intmid = Math.round(mid);
+        const extra = (intmid - mid) * 2 + 2;
+        const up = e.getFirstVisibleRow() - old_range.start.row + extra;
+        const down = old_range.end.row - e.getLastVisibleRow() + extra;
         if (up > 0) {
             e.scrollToLine(mid - up, true, true);
         } else if (down > 0) {
@@ -646,8 +646,8 @@ function editRestore() {
 }
 
 function editShowRegion(r1, c1, r2, c2) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(Math.round((r1 + r2) / 2), true, true);
@@ -656,8 +656,8 @@ function editShowRegion(r1, c1, r2, c2) {
 }
 
 function editShowLine(r1) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);
@@ -667,8 +667,8 @@ function editShowLine(r1) {
 }
 
 function editShowPoint(r1, c1) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);
