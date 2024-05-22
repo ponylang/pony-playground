@@ -487,11 +487,7 @@
         });
 
         theme = optionalLocalStorageGetItem("theme");
-        if (theme === null) {
-            set_theme(editor, themelist, "GitHub");
-        } else {
-            set_theme(editor, themelist, theme);
-        }
+        set_theme(editor, themelist, theme ?? "GitHub");
 
         session.setMode("ace/mode/pony");
 
