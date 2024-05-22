@@ -109,9 +109,8 @@
             var classes = mappings[arguments[1]];
             if (classes) {
                 return '<span class="' + classes + '">' + arguments[2] + '</span>';
-            } else {
-                return arguments[2];
             }
+            return arguments[2];
         });
     }
 
@@ -239,16 +238,11 @@
 
         req.open(method, url, true);
         req.onreadystatechange = function () {
-            if (req.readyState == XMLHttpRequest.DONE) {
-                if (req.status == expect) {
-                    if (on_success) {
-                        on_success(req.responseText);
-                    }
-                } else {
-                    if (on_fail) {
-                        on_fail(req.status, req.responseText);
-                    }
-                }
+            if (req.status == expect && on_success) {
+                on_success(req.responseText);
+            }
+            if (req.status != expect && on_fail) {
+                on_fail(req.status, req.responseText);
             }
         };
 
