@@ -524,7 +524,7 @@
         //area which would change the location of its cursor to where you clicked.
         addEventListener("keyup", function (e) {
             if ((document.body == document.activeElement) && //needed to avoid when editor has focus already
-                (13 === e.keyCode || 27 === e.keyCode)) { //Enter or Escape keys
+                ("Enter" === e.code || "Escape" === e.code)) { //Enter or Escape keys
                 editor.focus();
             }
         });
