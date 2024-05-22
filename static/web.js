@@ -2,6 +2,12 @@
     "use strict";
     const PLAYPEN_URL = "https://playground.ponylang.io";
 
+    /**
+     * Returns the `localStorage` item if set or null in case it isn't or an error
+     * (like [`SecurityError`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage#securityerror)) is thrown
+     * @param {String} key 
+     * @returns {String|null}
+     */
     function optionalLocalStorageGetItem(key) {
         try {
             return localStorage.getItem(key);
@@ -10,6 +16,13 @@
         }
     }
 
+    /**
+     * Sets the `localStorage` item and ignores potential exceptions
+     * (like [`QuotaExceededError`](https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem#quotaexceedederror)) is thrown
+     * @param {String} key 
+     * @param {String} value
+     * @returns {void}
+     */
     function optionalLocalStorageSetItem(key, value) {
         try {
             window.localStorage.setItem(key, value);
@@ -18,6 +31,12 @@
         }
     }
 
+    /**
+     * Creates [`<option>`s](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option)
+     * for the `#themes` select
+     * @param {Object} themelist 
+     * @returns {void}
+     */
     function build_themes(themelist) {
         // Load all ace themes, sorted by their proper name.
         const themes = themelist.themes;
@@ -34,6 +53,16 @@
         document.getElementById("themes").appendChild(themefrag);
     }
 
+    /**
+     * Sends an HTTP request and writes the result to the #result element
+     * @param {string} path 
+     * @param {any} data 
+     * @param {Function} callback 
+     * @param {HTMLButtonElement} button 
+     * @param {String} message 
+     * @param {HTMLDivElement} result 
+     * @returns {void}
+     */
     function send(path, data, callback, button, message, result) {
         button.disabled = true;
 
@@ -101,6 +130,12 @@
         }
     };
 
+    /**
+     * Refresh the syntax highlighting via pygments
+     * @param {String} pygmentized 
+     * @param {keyof PYGMENTS_TO_ACE_MAPPINGS} language 
+     * @returns {String}
+     */
     function rehighlight(pygmentized, language) {
         const mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
         return pygmentized.replace(/<span class="([^"]*)">([^<]*)<\/span>/g, function () {
@@ -121,6 +156,13 @@
         result.parentNode.style.visibility = "";
     }
 
+    /**
+     * Passes the code to `send()` and displays the evaluated code in `#result`
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function evaluate(result, code, button) {
         send("/evaluate.json", {
             code: code,
@@ -189,6 +231,14 @@
         }, button, "Running…", result);
     }
 
+    /**
+     * Passes the code to `send()` and displays the compiled code in `#result`
+     * @param {'asm'|'llvm-ir'} emit
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function compile(emit, result, code, button) {
         send("/compile.json", {
             emit: emit,
@@ -206,6 +256,15 @@
         }, button, "Compiling…", result);
     }
 
+    /**
+     * Creates a gist for the current code via `send()` and
+     * displays both the gist link and playground permalink in `#result`
+     * @param {'asm'|'llvm-ir'} emit
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function shareGist(result, code, button) {
         send("/gist.json", {
             code: code,
@@ -229,6 +288,16 @@
         }, button, "Creating Gist…", result);
     }
 
+    /**
+     * 
+     * @param {'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH'} method (see [HTTP request methods](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods))
+     * @param {String} url 
+     * @param {any} data 
+     * @param {Number} expect 
+     * @param {Function} on_success 
+     * @param {Function} on_fail 
+     * @return {void}
+     */
     function httpRequest(method, url, data, expect, on_success, on_fail) {
         const req = new XMLHttpRequest();
 
@@ -249,6 +318,15 @@
         }
     }
 
+    /**
+     * 
+     * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
+     * @param {HTMLDivElement} result 
+     * @param {String} gist_id 
+     * @param {bool} do_evaluate 
+     * @param {HTMLButtonElement} evaluateButton 
+     * @return {void}
+     */
     function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) { // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
         session.setValue("// Loading Gist: https://gist.github.com/" + gist_id + " ...");
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
@@ -279,17 +357,32 @@
         );
     }
 
+    /**
+     * Get URL query parameters as Object
+     * @returns {URLSearchParams}
+     */
     function getQueryParameters() {
         const url = new URL(window.location);
         return url.searchParams;
     }
 
+    /**
+     * Clears the result in various places
+     * @param {HTMLDivElement} result 
+     * @returns {void}
+     */
     function clear_result(result) {
         result.innerHTML = "";
         result.parentNode.dataset.empty = "";
         set_result.editor.resize();
     }
 
+    /**
+     * Sets the content of `#result` and resizes the editor
+     * @param {HTMLDivElement} result 
+     * @param {undefined|string|HTMLElement} contents 
+     * @returns {void}
+     */
     function set_result(result, contents) {
         delete result.parentNode.dataset.empty;
         if (contents === undefined) {
@@ -303,6 +396,12 @@
         set_result.editor.resize();
     }
 
+    /**
+     * Calls `setKeyboardHandler()` on `Ace.editor`
+     * @param {Ace.editor} editor (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+     * @param {'Ace'|'Emacs'|'Vim'} mode 
+     * @returns {void}
+     */
     function set_keyboard(editor, mode) {
         if (mode === "Emacs") {
             editor.setKeyboardHandler("ace/keyboard/emacs");
@@ -322,6 +421,13 @@
         }
     }
 
+    /**
+     * Sets the theme on `Ace.editor`
+     * @param {Ace.editor} editor (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+     * @param {Object} themelist 
+     * @param {String} theme 
+     * @returns {void}
+     */
     function set_theme(editor, themelist, theme) {
         const themes = document.getElementById("themes");
         let themepath = null,
@@ -366,18 +472,22 @@
 
     const COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
 
-    // A simple function to decode ANSI escape codes into HTML.
-    // This is very basic, with lots of very obvious omissions and holes;
-    // it’s designed purely to cope with rustc output.
-    //
-    // TERM=xterm rustc uses these:
-    //
-    // - bug/fatal/error = red
-    // - warning = yellow
-    // - note = green
-    // - help = cyan
-    // - error code = magenta
-    // - bold
+    /**
+     * A simple function to decode ANSI escape codes into HTML.
+     * This is very basic, with lots of very obvious omissions and holes;
+     * it’s designed purely to cope with rustc output.
+     * 
+     * TERM=xterm rustc uses these:
+     * - bug/fatal/error = red
+     * - warning = yellow
+     * - note = green
+     * - help = cyan
+     * - error code = magenta
+     * - bold
+     * 
+     * @param {String} text 
+     * @returns {String}
+     */
     function ansi2html(text) {
         return text.replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -391,13 +501,18 @@
             }).replace(/(?:\x1b\(B)?\x1b\[0?m/g, '');
     }
 
-    //This affects how mouse acts on the program output.
-    //Screenshots here: https://github.com/rust-lang/rust-playpen/pull/192#issue-145465630
-    //If mouse hovers on eg. "<anon>:3", temporarily show that line(3) into view by
-    //selecting it entirely and move editor's cursor to the beginning of it;
-    //Moves back to original view when mouse moved away.
-    //If mouse left click on eg. "<anon>:3" then the editor's cursor is moved
-    //to the beginning of that line
+    /**
+     * This affects how mouse acts on the program output.
+     * Screenshots here: https://github.com/rust-lang/rust-playpen/pull/192#issue-145465630
+     * If mouse hovers on eg. "<anon>:3", temporarily show that line(3) into view by
+     * selecting it entirely and move editor's cursor to the beginning of it;
+     * Moves back to original view when mouse moved away.
+     * If mouse left click on eg. "<anon>:3" then the editor's cursor is moved
+     * to the beginning of that line
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line number
+     */
     function jumpToLine(text, r1) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + ",1)\"" +
             " onmouseover=\"javascript:editShowLine(" + r1 + ")\"" +
@@ -405,9 +520,17 @@
             " class=\"linejump\">" + text + "</a>";
     }
 
-    //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31: 2:32"
-    //and thus selects a region on mouse hover, or when clicked sets cursor to
-    //the beginning of region.
+    /*
+     * Similarly to `jumpToLine()`, except this one acts on eg. "<anon>:2:31: 2:32"
+     * and thus selects a region on mouse hover, or when clicked sets cursor to
+     * the beginning of region.
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line start number
+     * @param {Number} c1 Column start number
+     * @param {Number} r2 Line end number
+     * @param {Number} c2 Column end number
+     */
     function jumpToRegion(text, r1, c1, r2, c2) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
             " onmouseover=\"javascript:editShowRegion(" + r1 + "," + c1 + ", " + r2 + "," + c2 + ")\"" +
@@ -415,7 +538,13 @@
             " class=\"linejump\">" + text + "</a>";
     }
 
-    //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31"
+    /**
+     * Similarly to `jumpToLine()`, except this one acts on eg. "<anon>:2:31"
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line number
+     * @param {Number} c1 Column number
+     */
     function jumpToPoint(text, r1, c1) {
         return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
             " onmouseover=\"javascript:editShowPoint(" + r1 + "," + c1 + ")\"" +
@@ -423,6 +552,11 @@
             " class=\"linejump\">" + text + "</a>";
     }
 
+    /**
+     * Replaces paths and adds jump links
+     * @param {String} text 
+     * @returns {String}
+     */
     function formatCompilerOutput(text) {
         return ansi2html(text)
             .replace(/\/.*\/main.pony/mg, "main.pony")
@@ -599,10 +733,20 @@
 // called via javascript:fn events from formatCompilerOutput
 var old_range;
 
+/**
+ * Get an instance of `Ace.editor` on `#editor`
+ * @returns {Ace.editor} (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+ */
 function editorGet() {
     return window.ace.edit("editor");
 }
 
+/**
+ * Selects text at the given line and column
+ * @param {Number} r1 Line number
+ * @param {Number} c1 Column number
+ * @returns {void}
+ */
 function editGo(r1, c1) {
     const e = editorGet();
     old_range = undefined;
@@ -631,6 +775,14 @@ function editRestore() {
     } // else visible enough
 }
 
+/**
+ * Selects text at the given line and region
+ * @param {Number} r1 Line start number
+ * @param {Number} c1 Column start number
+ * @param {Number} r2 Line end number
+ * @param {Number} c2 Column end number
+ * @returns {void}
+ */
 function editShowRegion(r1, c1, r2, c2) {
     const e = editorGet();
     const es = e.selection;
@@ -641,6 +793,11 @@ function editShowRegion(r1, c1, r2, c2) {
     es.selectTo(r2 - 1, c2 - 1);
 }
 
+/**
+ * Selects text at the given line
+ * @param {Number} r1 Line number
+ * @returns {void}
+ */
 function editShowLine(r1) {
     const e = editorGet();
     const es = e.selection;
@@ -652,6 +809,12 @@ function editShowLine(r1) {
     es.selectTo(r1 - 1, 0);
 }
 
+/**
+ * Selects text at the given line and column
+ * @param {Number} r1 Line number
+ * @param {Number} c1 Column number
+ * @returns {void}
+ */
 function editShowPoint(r1, c1) {
     const e = editorGet();
     const es = e.selection;
