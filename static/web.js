@@ -46,7 +46,7 @@
         request.setRequestHeader("Content-Type", "application/json");
         request.onreadystatechange = function () {
             button.disabled = false;
-            if (request.readyState != 4) {
+            if (request.readyState !== 4) {
                 return
             }
 
@@ -58,7 +58,7 @@
                 console.log("JSON.parse(): " + e);
             }
 
-            if (request.status == 200) {
+            if (request.status === 200) {
                 callback(json);
             } else if (request.status === 0) {
                 set_result(result, "<p class=error>Connection failure" +
@@ -219,7 +219,7 @@
 
             const play_url = PLAYPEN_URL + "/?gist=" + encodeURIComponent(gist_id);
 
-            if (branch != "release") {
+            if (branch !== "release") {
                 play_url += "&branch=" + branch;
             }
 
@@ -296,7 +296,7 @@
         delete result.parentNode.dataset.empty;
         if (contents === undefined) {
             result.textContent = "";
-        } else if (typeof contents == "string") {
+        } else if (typeof contents === "string") {
             result.innerHTML = contents;
         } else {
             result.textContent = "";
@@ -306,9 +306,9 @@
     }
 
     function set_keyboard(editor, mode) {
-        if (mode == "Emacs") {
+        if (mode === "Emacs") {
             editor.setKeyboardHandler("ace/keyboard/emacs");
-        } else if (mode == "Vim") {
+        } else if (mode === "Vim") {
             editor.setKeyboardHandler("ace/keyboard/vim");
             if (!set_keyboard.vim_set_up) {
                 ace.config.loadModule("ace/keyboard/vim", function (m) {
@@ -524,7 +524,7 @@
         //area which would change the location of its cursor to where you clicked.
         addEventListener("keyup", function (e) {
             if ((document.body == document.activeElement) && //needed to avoid when editor has focus already
-                (13 == e.keyCode || 27 == e.keyCode)) { //Enter or Escape keys
+                (13 === e.keyCode || 27 === e.keyCode)) { //Enter or Escape keys
                 editor.focus();
             }
         });
