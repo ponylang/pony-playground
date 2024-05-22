@@ -469,7 +469,11 @@
         editor.renderer.on('themeChange', function (e) {
             var path = e.theme;
             ace.config.loadModule(['theme', e.theme], function (t) {
-                document.getElementById("result").className = t.cssClass + (t.isDark ? " ace_dark" : "");
+                const resultEl = document.getElementById("result");
+                resultEl.className = t.cssClass;
+                if (t.isDark) {
+                    resultEl.classList.add("ace_dark");
+                }
             });
         });
 
