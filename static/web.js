@@ -2,8 +2,6 @@
     "use strict";
     const PLAYPEN_URL = "https://playground.ponylang.io";
 
-    var samples = 2;
-
     function optionalLocalStorageGetItem(key) {
         try {
             return localStorage.getItem(key);
@@ -114,7 +112,7 @@
         });
     }
 
-    function redrawResult(result) {
+    function redrawResult(result) { // @todo not used anymore? Remove?
         // Sadly the fun letter-spacing animation can leave artefacts,
         // so we want to manually trigger a redraw. It doesn’t matter
         // whether it’s relative or static for now, so we’ll flip that.
@@ -251,7 +249,7 @@
         }
     }
 
-    function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) {
+    function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) { // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
         session.setValue("// Loading Gist: https://gist.github.com/" + gist_id + " ...");
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
             function (response) {
@@ -327,7 +325,6 @@
     function set_theme(editor, themelist, theme) {
         const themes = document.getElementById("themes");
         let themepath = null,
-            i = 0,
             selected = themes.options[themes.selectedIndex];
         if (selected.textContent === theme) {
             themepath = selected.getAttribute("val");
@@ -346,19 +343,9 @@
         }
     }
 
-    function getRadioValue(name) {
-        const nodes = document.getElementsByName(name);
-        for (const node of nodes) {
-            if (node.checked) {
-                return node.value;
-            }
-        }
-    }
-
-    let evaluateButton;
+    let evaluateButton; // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
     let asmButton;
     let irButton;
-    let formatButton;
     let gistButton;
     let configureEditorButton;
     let result;
@@ -373,8 +360,8 @@
     let query;
 
     function doEvaluate() {
-        var code = session.getValue();
-        evaluate(result, session.getValue(), evaluateButton);
+        var code = session.getValue(); // @todo not used anymore? Remove?
+        evaluate(result, session.getValue(), evaluateButton); // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
     }
 
     const COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
@@ -411,7 +398,7 @@
     //Moves back to original view when mouse moved away.
     //If mouse left click on eg. "<anon>:3" then the editor's cursor is moved
     //to the beginning of that line
-    function jumpToLine(text, r1) {
+    function jumpToLine(text, r1) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + ",1)\"" +
             " onmouseover=\"javascript:editShowLine(" + r1 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
@@ -421,7 +408,7 @@
     //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31: 2:32"
     //and thus selects a region on mouse hover, or when clicked sets cursor to
     //the beginning of region.
-    function jumpToRegion(text, r1, c1, r2, c2) {
+    function jumpToRegion(text, r1, c1, r2, c2) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
             " onmouseover=\"javascript:editShowRegion(" + r1 + "," + c1 + ", " + r2 + "," + c2 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
@@ -447,7 +434,6 @@
         evaluateButton = document.getElementById("evaluate");
         asmButton = document.getElementById("asm");
         irButton = document.getElementById("llvm-ir");
-        formatButton = document.getElementById("format");
         gistButton = document.getElementById("gist");
         configureEditorButton = document.getElementById("configure-editor");
         result = document.getElementById("result").firstElementChild;
