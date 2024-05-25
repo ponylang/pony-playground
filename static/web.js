@@ -320,7 +320,7 @@
       }
 
     /**
-     * 
+     * Fetches a gist from the [gist.github.com](https://gist.github.com/) and loads it into the code editor
      * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
      * @param {HTMLDivElement} result 
      * @param {String} gist_id 
@@ -358,6 +358,16 @@
         );
     }
 
+    /**
+     * Fetches a code snippet from the [`ponylang/pony-tutorial`](https://github.com/ponylang/pony-tutorial) repository on GitHub
+     * and loads it into the code editor
+     * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
+     * @param {HTMLDivElement} result 
+     * @param {String} gist_id 
+     * @param {bool} do_evaluate 
+     * @param {HTMLButtonElement} evaluateButton 
+     * @return {void}
+     */
     function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
         session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/main/code-samples/" + snippet_file_name + " ...");
         httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/" + (query.get("branch") ?? "main") + "/code-samples/" + snippet_file_name, null, 200,
