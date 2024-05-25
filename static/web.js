@@ -2,8 +2,12 @@
     "use strict";
     const PLAYPEN_URL = "https://playground.ponylang.io";
 
-    var samples = 2;
-
+    /**
+     * Returns the `localStorage` item if set or null in case it isn't or an error
+     * (like [`SecurityError`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage#securityerror)) is thrown
+     * @param {String} key 
+     * @returns {String|null}
+     */
     function optionalLocalStorageGetItem(key) {
         try {
             return localStorage.getItem(key);
@@ -12,6 +16,13 @@
         }
     }
 
+    /**
+     * Sets the `localStorage` item and ignores potential exceptions
+     * (like [`QuotaExceededError`](https://developer.mozilla.org/en-US/docs/Web/API/Storage/setItem#quotaexceedederror)) is thrown
+     * @param {String} key 
+     * @param {String} value
+     * @returns {void}
+     */
     function optionalLocalStorageSetItem(key, value) {
         try {
             window.localStorage.setItem(key, value);
@@ -20,68 +31,82 @@
         }
     }
 
+    /**
+     * Creates [`<option>`s](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/option)
+     * for the `#themes` select
+     * @param {Object} themelist 
+     * @returns {void}
+     */
     function build_themes(themelist) {
         // Load all ace themes, sorted by their proper name.
-        var themes = themelist.themes;
-        themes.sort(function (a, b) {
-            if (a.caption < b.caption) {
-                return -1;
-            } else if (a.caption > b.caption) {
-                return 1;
-            }
-            return 0;
-        });
+        const themes = themelist.themes;
+        themes.sort((a, b) => a.caption.localeCompare(b.caption));
 
-        var themeopt,
+        let themeopt,
             themefrag = document.createDocumentFragment();
-        for (var i = 0; i < themes.length; i++) {
+        for (const theme of themes) {
             themeopt = document.createElement("option");
-            themeopt.setAttribute("val", themes[i].theme);
-            themeopt.textContent = themes[i].caption;
+            themeopt.setAttribute("val", theme.theme);
+            themeopt.textContent = theme.caption;
             themefrag.appendChild(themeopt);
         }
         document.getElementById("themes").appendChild(themefrag);
     }
 
-    function send(path, data, callback, button, message, result) {
+    /**
+     * Sends an HTTP request and writes the result to the #result element
+     * @param {string} path 
+     * @param {any} data 
+     * @param {Function} callback 
+     * @param {HTMLButtonElement} button 
+     * @param {String} message 
+     * @param {HTMLDivElement} result 
+     * @returns {void}
+     */
+    async function send(path, data, callback, button, message, result) {
+        let response, json;
         button.disabled = true;
 
         set_result(result, "<p class=message>" + message);
 
-        var request = new XMLHttpRequest();
-        request.open("POST", path, true);
-        request.setRequestHeader("Content-Type", "application/json");
-        request.onreadystatechange = function () {
-            button.disabled = false;
-            if (request.readyState == 4) {
-                var json;
-
-                try {
-                    json = JSON.parse(request.response);
-                } catch (e) {
-                    console.log("JSON.parse(): " + e);
-                }
-
-                if (request.status == 200) {
-                    callback(json);
-                } else if (request.status === 0) {
-                    set_result(result, "<p class=error>Connection failure" +
-                        "<p class=error-explanation>Are you connected to the Internet?");
-                } else {
-                    set_result(result, "<p class=error>Something went wrong" +
-                        "<p class=error-explanation>The HTTP request produced a response with status code " + request.status + ".");
-                }
-            }
-        };
-        request.timeout = 20000;
-        request.ontimeout = function () {
-            set_result(result, "<p class=error>Connection timed out" +
+        try {
+            response = await fetch(path, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                signal: AbortSignal.timeout(5000),
+                body: JSON.stringify(data),
+            });
+        } catch(err) {
+            if ((err instanceof DOMException) && err.name === "AbortError") {
+                set_result(window, result, "<p class=error>Connection timed out" +
                 "<p class=error-explanation>Are you connected to the Internet?");
-        };
-        request.send(JSON.stringify(data));
+            } else {
+                set_result(result, "<p class=error>Something went wrong" +
+                        "<p class=error-explanation>The HTTP request produced an error with message " + err.message + ".");
+            }
+        }
+        button.disabled = false;
+
+        try {
+            json = await response.json();
+        } catch (e) {
+            console.log("JSON.parse(): " + e);
+        }
+
+        if (response.status === 200) {
+            callback(json);
+        } else if (response.status === 0) {
+            set_result(result, "<p class=error>Connection failure" +
+                        "<p class=error-explanation>Are you connected to the Internet?");
+        } else {
+            set_result(result, "<p class=error>Something went wrong" +
+                        "<p class=error-explanation>The HTTP request produced a response with status code " + response.status + ".");
+        }
     }
 
-    var PYGMENTS_TO_ACE_MAPPINGS = {
+    const PYGMENTS_TO_ACE_MAPPINGS = {
         'asm': {
             'c': 'ace_comment', // Comment,
             'na': 'ace_support ace_function ace_directive', // Name.Attribute,
@@ -110,19 +135,24 @@
         }
     };
 
+    /**
+     * Refresh the syntax highlighting via pygments
+     * @param {String} pygmentized 
+     * @param {keyof PYGMENTS_TO_ACE_MAPPINGS} language 
+     * @returns {String}
+     */
     function rehighlight(pygmentized, language) {
-        var mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
+        const mappings = PYGMENTS_TO_ACE_MAPPINGS[language];
         return pygmentized.replace(/<span class="([^"]*)">([^<]*)<\/span>/g, function () {
-            var classes = mappings[arguments[1]];
+            const classes = mappings[arguments[1]];
             if (classes) {
                 return '<span class="' + classes + '">' + arguments[2] + '</span>';
-            } else {
-                return arguments[2];
             }
+            return arguments[2];
         });
     }
 
-    function redrawResult(result) {
+    function redrawResult(result) { // @todo not used anymore? Remove?
         // Sadly the fun letter-spacing animation can leave artefacts,
         // so we want to manually trigger a redraw. It doesn’t matter
         // whether it’s relative or static for now, so we’ll flip that.
@@ -131,6 +161,13 @@
         result.parentNode.style.visibility = "";
     }
 
+    /**
+     * Passes the code to `send()` and displays the evaluated code in `#result`
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function evaluate(result, code, button) {
         send("/evaluate.json", {
             code: code,
@@ -138,7 +175,7 @@
             color: true,
             branch: branch
         }, function (object) {
-            var samp, pre, h;
+            let samp, pre, h;
             set_result(result);
             if (object.compiler) {
                 h = document.createElement("span");
@@ -186,14 +223,12 @@
                 result.appendChild(pre);
             }
 
-            var div = document.createElement("p");
+            const div = document.createElement("p");
             div.className = "message";
-            if (object.success) {
-                if (object.stdout || object.stderr) {
-                    div.textContent = "Program ended.";
-                } else {
-                    div.textContent = "Program ended with no output.";
-                }
+            if (object.success && (object.stdout || object.stderr)) {
+                div.textContent = "Program ended.";
+            } else if (object.success) {
+                div.textContent = "Program ended with no output.";
             } else {
                 div.textContent = "Compilation failed.";
             }
@@ -201,6 +236,14 @@
         }, button, "Running…", result);
     }
 
+    /**
+     * Passes the code to `send()` and displays the compiled code in `#result`
+     * @param {'asm'|'llvm-ir'} emit
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function compile(emit, result, code, button) {
         send("/compile.json", {
             emit: emit,
@@ -218,18 +261,27 @@
         }, button, "Compiling…", result);
     }
 
+    /**
+     * Creates a gist for the current code via `send()` and
+     * displays both the gist link and playground permalink in `#result`
+     * @param {'asm'|'llvm-ir'} emit
+     * @param {HTMLDivElement} result 
+     * @param {String} code 
+     * @param {HTMLButtonElement} button 
+     * @return {void}
+     */
     function shareGist(result, code, button) {
         send("/gist.json", {
             code: code,
             base_url: PLAYPEN_URL,
             branch: branch,
         }, function (response) {
-            var gist_id = response.gist_id;
-            var gist_url = response.gist_url;
+            const gist_id = response.gist_id;
+            const gist_url = response.gist_url;
 
-            var play_url = PLAYPEN_URL + "/?gist=" + encodeURIComponent(gist_id);
+            const play_url = PLAYPEN_URL + "/?gist=" + encodeURIComponent(gist_id);
 
-            if (branch != "release") {
+            if (branch !== "release") {
                 play_url += "&branch=" + branch;
             }
 
@@ -241,48 +293,62 @@
         }, button, "Creating Gist…", result);
     }
 
-    function httpRequest(method, url, data, expect, on_success, on_fail) {
-        var req = new XMLHttpRequest();
-
-        req.open(method, url, true);
-        req.onreadystatechange = function () {
-            if (req.readyState == XMLHttpRequest.DONE) {
-                if (req.status == expect) {
-                    if (on_success) {
-                        on_success(req.responseText);
-                    }
-                } else {
-                    if (on_fail) {
-                        on_fail(req.status, req.responseText);
-                    }
-                }
-            }
+    /**
+     * 
+     * @param {'GET'|'HEAD'|'POST'|'PUT'|'DELETE'|'CONNECT'|'OPTIONS'|'TRACE'|'PATCH'} method (see [HTTP request methods](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods))
+     * @param {String} url 
+     * @param {any} data 
+     * @param {Number} expect 
+     * @param {Function} on_success 
+     * @param {Function} on_fail 
+     * @return {void}
+     */
+    async function httpRequest(method, url, data, expect, on_success, on_fail) {
+        const options = {
+            method,          
         };
-
-        if (method === "GET") {
-            req.send();
-        } else if (method === "POST") {
-            req.send(data);
+        if (method === 'POST') {
+            options.body = data;
         }
-    }
+        const response = await fetch(url, options);
+        if (response.status == expect && on_success instanceof Function) {
+            on_success(response);
+        }
+        if (response.status != expect && on_fail instanceof Function) {
+            on_fail(response.status, response);
+        }
+      }
 
-    function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) {
+    /**
+     * 
+     * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
+     * @param {HTMLDivElement} result 
+     * @param {String} gist_id 
+     * @param {bool} do_evaluate 
+     * @param {HTMLButtonElement} evaluateButton 
+     * @return {void}
+     */
+    function fetchGist(session, result, gist_id, do_evaluate, evaluateButton) { // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
         session.setValue("// Loading Gist: https://gist.github.com/" + gist_id + " ...");
         httpRequest("GET", "https://api.github.com/gists/" + gist_id, null, 200,
-            function (response) {
-                response = JSON.parse(response);
-                if (response) {
-                    var files = response.files;
-                    for (var name in files) {
-                        if (files.hasOwnProperty(name)) {
-                            session.setValue(files[name].content);
+            async function (response) {
+                response = await response.json();
+                if (!response) {
+                    return;
+                }
 
-                            if (do_evaluate) {
-                                doEvaluate();
-                            }
-                            break;
-                        }
+                const files = response.files;
+                for (const [ name, file ] of Object.entries(files)) {
+                    if (!files.hasOwnProperty(name)) {
+                        continue;
                     }
+
+                    session.setValue(file.content);
+
+                    if (do_evaluate) {
+                        doEvaluate();
+                    }
+                    break;
                 }
             },
             function (status, response) {
@@ -309,29 +375,37 @@
         );
     }
 
+    /**
+     * Get URL query parameters as Object
+     * @returns {URLSearchParams}
+     */
     function getQueryParameters() {
-        var a = window.location.search.substr(1).split('&');
-        if (a === "") return {};
-        var b = {};
-        for (var i = 0; i < a.length; i++) {
-            var p = a[i].split('=');
-            if (p.length != 2) continue;
-            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
-        }
-        return b;
+        const url = new URL(window.location);
+        return url.searchParams;
     }
 
+    /**
+     * Clears the result in various places
+     * @param {HTMLDivElement} result 
+     * @returns {void}
+     */
     function clear_result(result) {
         result.innerHTML = "";
-        result.parentNode.setAttribute("data-empty", "");
+        result.parentNode.dataset.empty = "";
         set_result.editor.resize();
     }
 
+    /**
+     * Sets the content of `#result` and resizes the editor
+     * @param {HTMLDivElement} result 
+     * @param {undefined|string|HTMLElement} contents 
+     * @returns {void}
+     */
     function set_result(result, contents) {
-        result.parentNode.removeAttribute("data-empty");
+        delete result.parentNode.dataset.empty;
         if (contents === undefined) {
             result.textContent = "";
-        } else if (typeof contents == "string") {
+        } else if (typeof contents === "string") {
             result.innerHTML = contents;
         } else {
             result.textContent = "";
@@ -340,14 +414,20 @@
         set_result.editor.resize();
     }
 
+    /**
+     * Calls `setKeyboardHandler()` on `Ace.editor`
+     * @param {Ace.editor} editor (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+     * @param {'Ace'|'Emacs'|'Vim'} mode 
+     * @returns {void}
+     */
     function set_keyboard(editor, mode) {
-        if (mode == "Emacs") {
+        if (mode === "Emacs") {
             editor.setKeyboardHandler("ace/keyboard/emacs");
-        } else if (mode == "Vim") {
+        } else if (mode === "Vim") {
             editor.setKeyboardHandler("ace/keyboard/vim");
             if (!set_keyboard.vim_set_up) {
                 ace.config.loadModule("ace/keyboard/vim", function (m) {
-                    var Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
+                    const Vim = ace.require("ace/keyboard/vim").CodeMirror.Vim;
                     Vim.defineEx("write", "w", function (cm, input) {
                         cm.ace.execCommand("evaluate");
                     });
@@ -359,19 +439,24 @@
         }
     }
 
+    /**
+     * Sets the theme on `Ace.editor`
+     * @param {Ace.editor} editor (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+     * @param {Object} themelist 
+     * @param {String} theme 
+     * @returns {void}
+     */
     function set_theme(editor, themelist, theme) {
-        var themes = document.getElementById("themes");
-        var themepath = null,
-            i = 0,
-            themelen = themelist.themes.length,
+        const themes = document.getElementById("themes");
+        let themepath = null,
             selected = themes.options[themes.selectedIndex];
         if (selected.textContent === theme) {
             themepath = selected.getAttribute("val");
         } else {
-            for (i; i < themelen; i++) {
-                if (themelist.themes[i].caption == theme) {
+            for (const [ i, currentTheme ] of themelist.themes.entries()) {
+                if (currentTheme.caption == theme) {
                     themes.selectedIndex = i;
-                    themepath = themelist.themes[i].theme;
+                    themepath = currentTheme.theme;
                     break;
                 }
             }
@@ -382,52 +467,45 @@
         }
     }
 
-    function getRadioValue(name) {
-        var nodes = document.getElementsByName(name);
-        for (var i = 0; i < nodes.length; i++) {
-            var node = nodes[i];
-            if (node.checked) {
-                return node.value;
-            }
-        }
-    }
-
-    var evaluateButton;
-    var asmButton;
-    var irButton;
-    var formatButton;
-    var gistButton;
-    var configureEditorButton;
-    var result;
-    var clearResultButton;
-    var keyboard;
-    var themes;
-    var editor;
-    var session;
-    var themelist;
-    var theme;
-    var mode;
-    var query;
+    let evaluateButton; // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
+    let asmButton;
+    let irButton;
+    let gistButton;
+    let configureEditorButton;
+    let result;
+    let clearResultButton;
+    let keyboard;
+    let themes;
+    let editor;
+    let session;
+    let themelist;
+    let theme;
+    let mode;
+    let query;
 
     function doEvaluate() {
-        var code = session.getValue();
-        evaluate(result, session.getValue(), evaluateButton);
+        var code = session.getValue(); // @todo not used anymore? Remove?
+        evaluate(result, session.getValue(), evaluateButton); // @todo is the evaluateButton used globally here? We should choose if we want to pass it or use it locally but not mix both options
     }
 
-    var COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
+    const COLOR_CODES = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white'];
 
-    // A simple function to decode ANSI escape codes into HTML.
-    // This is very basic, with lots of very obvious omissions and holes;
-    // it’s designed purely to cope with rustc output.
-    //
-    // TERM=xterm rustc uses these:
-    //
-    // - bug/fatal/error = red
-    // - warning = yellow
-    // - note = green
-    // - help = cyan
-    // - error code = magenta
-    // - bold
+    /**
+     * A simple function to decode ANSI escape codes into HTML.
+     * This is very basic, with lots of very obvious omissions and holes;
+     * it’s designed purely to cope with rustc output.
+     * 
+     * TERM=xterm rustc uses these:
+     * - bug/fatal/error = red
+     * - warning = yellow
+     * - note = green
+     * - help = cyan
+     * - error code = magenta
+     * - bold
+     * 
+     * @param {String} text 
+     * @returns {String}
+     */
     function ansi2html(text) {
         return text.replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
@@ -441,31 +519,50 @@
             }).replace(/(?:\x1b\(B)?\x1b\[0?m/g, '');
     }
 
-    //This affects how mouse acts on the program output.
-    //Screenshots here: https://github.com/rust-lang/rust-playpen/pull/192#issue-145465630
-    //If mouse hovers on eg. "<anon>:3", temporarily show that line(3) into view by
-    //selecting it entirely and move editor's cursor to the beginning of it;
-    //Moves back to original view when mouse moved away.
-    //If mouse left click on eg. "<anon>:3" then the editor's cursor is moved
-    //to the beginning of that line
-    function jumpToLine(text, r1) {
+    /**
+     * This affects how mouse acts on the program output.
+     * Screenshots here: https://github.com/rust-lang/rust-playpen/pull/192#issue-145465630
+     * If mouse hovers on eg. "<anon>:3", temporarily show that line(3) into view by
+     * selecting it entirely and move editor's cursor to the beginning of it;
+     * Moves back to original view when mouse moved away.
+     * If mouse left click on eg. "<anon>:3" then the editor's cursor is moved
+     * to the beginning of that line
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line number
+     */
+    function jumpToLine(text, r1) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + ",1)\"" +
             " onmouseover=\"javascript:editShowLine(" + r1 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
             " class=\"linejump\">" + text + "</a>";
     }
 
-    //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31: 2:32"
-    //and thus selects a region on mouse hover, or when clicked sets cursor to
-    //the beginning of region.
-    function jumpToRegion(text, r1, c1, r2, c2) {
+    /*
+     * Similarly to `jumpToLine()`, except this one acts on eg. "<anon>:2:31: 2:32"
+     * and thus selects a region on mouse hover, or when clicked sets cursor to
+     * the beginning of region.
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line start number
+     * @param {Number} c1 Column start number
+     * @param {Number} r2 Line end number
+     * @param {Number} c2 Column end number
+     */
+    function jumpToRegion(text, r1, c1, r2, c2) { // @todo not used anymore? Remove?
         return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
             " onmouseover=\"javascript:editShowRegion(" + r1 + "," + c1 + ", " + r2 + "," + c2 + ")\"" +
             " onmouseout=\"javascript:editRestore()\"" +
             " class=\"linejump\">" + text + "</a>";
     }
 
-    //Similarly to jumpToLine, except this one acts on eg. "<anon>:2:31"
+    /**
+     * Similarly to `jumpToLine()`, except this one acts on eg. "<anon>:2:31"
+     * 
+     * @param {String} text 
+     * @param {Number} r1 Line number
+     * @param {Number} c1 Column number
+     */
     function jumpToPoint(text, r1, c1) {
         return "<a onclick=\"javascript:editGo(" + r1 + "," + c1 + ")\"" +
             " onmouseover=\"javascript:editShowPoint(" + r1 + "," + c1 + ")\"" +
@@ -473,6 +570,11 @@
             " class=\"linejump\">" + text + "</a>";
     }
 
+    /**
+     * Replaces paths and adds jump links
+     * @param {String} text 
+     * @returns {String}
+     */
     function formatCompilerOutput(text) {
         return ansi2html(text)
             .replace(/\/.*\/main.pony/mg, "main.pony")
@@ -484,7 +586,6 @@
         evaluateButton = document.getElementById("evaluate");
         asmButton = document.getElementById("asm");
         irButton = document.getElementById("llvm-ir");
-        formatButton = document.getElementById("format");
         gistButton = document.getElementById("gist");
         configureEditorButton = document.getElementById("configure-editor");
         result = document.getElementById("result").firstElementChild;
@@ -506,16 +607,16 @@
         editor.renderer.on('themeChange', function (e) {
             var path = e.theme;
             ace.config.loadModule(['theme', e.theme], function (t) {
-                document.getElementById("result").className = t.cssClass + (t.isDark ? " ace_dark" : "");
+                const resultEl = document.getElementById("result");
+                resultEl.className = t.cssClass;
+                if (t.isDark) {
+                    resultEl.classList.add("ace_dark");
+                }
             });
         });
 
         theme = optionalLocalStorageGetItem("theme");
-        if (theme === null) {
-            set_theme(editor, themelist, "GitHub");
-        } else {
-            set_theme(editor, themelist, theme);
-        }
+        set_theme(editor, themelist, theme ?? "GitHub");
 
         session.setMode("ace/mode/pony");
 
@@ -530,16 +631,16 @@
         }
 
         query = getQueryParameters();
-        if ("code" in query) {
-            session.setValue(query.code);
-        } else if ("gist" in query) {
+        if (query.has("code")) {
+            session.setValue(query.get("code"));
+        } else if (query.has("gist")) {
             // fetchGist() must defer evaluation until after the content has been loaded
-            fetchGist(session, result, query.gist, query.run === "1", evaluateButton);
-            query.run = 0;
+            fetchGist(session, result, query.get("gist"), query.get("run") === "1", evaluateButton);
+            query.set("run", 0);
         } else if (query.has("snippet")) {
             // fetchSnippet() must defer evaluation until after the content has been loaded
             fetchSnippet(session, result, query.get("snippet"), query.get("run") === "1", evaluateButton);
-            query.run = 0;
+            query.set("run", 0);
         } else {
             var code = optionalLocalStorageGetItem("code");
             if (code !== null) {
@@ -547,17 +648,15 @@
             }
         }
 
-        if ("branch" in query) {
-            branch = query.branch
+        if (query.has("branch")) {
+            branch = query.get("branch")
         }
 
-        if (query.run === "1") {
+        if (query.get("run") === "1") {
             doEvaluate();
         }
 
-        addEventListener("resize", function () {
-            editor.resize();
-        });
+        addEventListener("resize", editor.resize);
 
         //This helps re-focus editor after a Run or any other action that caused
         //editor to lose focus. Just press Enter or Esc key to focus editor.
@@ -565,7 +664,7 @@
         //area which would change the location of its cursor to where you clicked.
         addEventListener("keyup", function (e) {
             if ((document.body == document.activeElement) && //needed to avoid when editor has focus already
-                (13 == e.keyCode || 27 == e.keyCode)) { //Enter or Escape keys
+                (["Enter", "Escape"].includes(e.code))) { //Enter or Escape keys
                 editor.focus();
             }
         });
@@ -602,15 +701,15 @@
         editor.commands.addCommand({
             name: "rust_no_single_quote_autopairing",
             exec: function (editor, line) {
-                var sess = editor.getSession();
-                var doc = sess.getDocument();
-                var selection = sess.getSelection();
-                var ranges = selection.getAllRanges();
-                var prev_range = null;
+                const sess = editor.getSession();
+                const doc = sess.getDocument();
+                const selection = sess.getSelection();
+                const ranges = selection.getAllRanges();
+                let prev_range = null;
 
                 // no selection = zero width range, so we don't need to handle this case specially
                 // start from the back, so changes to earlier ranges don't invalidate later ranges
-                for (var i = ranges.length - 1; i >= 0; i--) {
+                for (const i = ranges.length - 1; i >= 0; i--) {
                     // sanity check: better to do no modification than to do something wrong
                     // see the compareRange docs:
                     // https://github.com/ajaxorg/ace/blob/v1.2.6/lib/ace/range.js#L106-L120
@@ -630,36 +729,25 @@
 
         // We’re all pretty much agreed that such an obscure command as transposing
         // letters hogging Ctrl-T, normally “open new tab”, is a bad thing.
-        var transposeletters = editor.commands.commands.transposeletters;
+        const transposeletters = editor.commands.commands.transposeletters;
         editor.commands.removeCommand("transposeletters");
         delete transposeletters.bindKey;
         editor.commands.addCommand(transposeletters);
 
-        asmButton.onclick = function () {
-            compile("asm", result, session.getValue(), asmButton);
-        };
+        asmButton.onclick = compile.bind(window, "asm", result, session.getValue(), asmButton);
 
-        irButton.onclick = function () {
-            compile("llvm-ir", result, session.getValue(), irButton);
-        };
+        irButton.onclick = compile.bind(window, "llvm-ir", result, session.getValue(), irButton);
 
-        gistButton.onclick = function () {
-            shareGist(result, session.getValue(), gistButton);
-        };
+        gistButton.onclick = shareGist.bind(window, result, session.getValue(), gistButton);
 
         configureEditorButton.onclick = function () {
-            var dropdown = configureEditorButton.nextElementSibling;
+            const dropdown = configureEditorButton.nextElementSibling;
             dropdown.style.display = dropdown.style.display ? "" : "block";
         };
 
-        clearResultButton.onclick = function () {
-            clear_result(result);
-        };
+        clearResultButton.onclick = clear_result.bind(window, result);
 
-        themes.onkeyup = themes.onchange = function () {
-            set_theme(editor, themelist, themes.options[themes.selectedIndex].text);
-        };
-
+        themes.onkeyup = themes.onchange = set_theme.bind(window, editor, themelist, themes.options[themes.selectedIndex].text);
     }, false);
 }());
 
@@ -667,12 +755,22 @@
 // called via javascript:fn events from formatCompilerOutput
 var old_range;
 
+/**
+ * Get an instance of `Ace.editor` on `#editor`
+ * @returns {Ace.editor} (see [Ace.editor](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html))
+ */
 function editorGet() {
     return window.ace.edit("editor");
 }
 
+/**
+ * Selects text at the given line and column
+ * @param {Number} r1 Line number
+ * @param {Number} c1 Column number
+ * @returns {void}
+ */
 function editGo(r1, c1) {
-    var e = editorGet();
+    const e = editorGet();
     old_range = undefined;
     e.focus();
     e.selection.clearSelection();
@@ -681,25 +779,35 @@ function editGo(r1, c1) {
 }
 
 function editRestore() {
-    if (old_range) {
-        var e = editorGet();
-        e.selection.setSelectionRange(old_range, false);
-        var mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
-        var intmid = Math.round(mid);
-        var extra = (intmid - mid) * 2 + 2;
-        var up = e.getFirstVisibleRow() - old_range.start.row + extra;
-        var down = old_range.end.row - e.getLastVisibleRow() + extra;
-        if (up > 0) {
-            e.scrollToLine(mid - up, true, true);
-        } else if (down > 0) {
-            e.scrollToLine(mid + down, true, true);
-        } // else visible enough
+    if (!old_range) {
+        return
     }
+
+    const e = editorGet();
+    e.selection.setSelectionRange(old_range, false);
+    const mid = (e.getFirstVisibleRow() + e.getLastVisibleRow()) / 2;
+    const intmid = Math.round(mid);
+    const extra = (intmid - mid) * 2 + 2;
+    const up = e.getFirstVisibleRow() - old_range.start.row + extra;
+    const down = old_range.end.row - e.getLastVisibleRow() + extra;
+    if (up > 0) {
+        e.scrollToLine(mid - up, true, true);
+    } else if (down > 0) {
+        e.scrollToLine(mid + down, true, true);
+    } // else visible enough
 }
 
+/**
+ * Selects text at the given line and region
+ * @param {Number} r1 Line start number
+ * @param {Number} c1 Column start number
+ * @param {Number} r2 Line end number
+ * @param {Number} c2 Column end number
+ * @returns {void}
+ */
 function editShowRegion(r1, c1, r2, c2) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(Math.round((r1 + r2) / 2), true, true);
@@ -707,9 +815,14 @@ function editShowRegion(r1, c1, r2, c2) {
     es.selectTo(r2 - 1, c2 - 1);
 }
 
+/**
+ * Selects text at the given line
+ * @param {Number} r1 Line number
+ * @returns {void}
+ */
 function editShowLine(r1) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);
@@ -718,9 +831,15 @@ function editShowLine(r1) {
     es.selectTo(r1 - 1, 0);
 }
 
+/**
+ * Selects text at the given line and column
+ * @param {Number} r1 Line number
+ * @param {Number} c1 Column number
+ * @returns {void}
+ */
 function editShowPoint(r1, c1) {
-    var e = editorGet();
-    var es = e.selection;
+    const e = editorGet();
+    const es = e.selection;
     old_range = es.getRange();
     es.clearSelection();
     e.scrollToLine(r1, true, true);

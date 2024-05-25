@@ -22,30 +22,30 @@
 
 <body>
     <form id="control">
-        <div><button type=button class=primary id=evaluate
+        <div><button type="button" class="primary" id="evaluate"
                 title="Execute your code (you can also press Ctrl+Enter when editing code)">Run</button><button
-                type=button id=asm title="Compile to ASM">ASM</button><button type=button id=llvm-ir
+                type="button" id="asm" title="Compile to ASM">ASM</button><button type="button" id="llvm-ir"
                 title="Compile to LLVM IR">LLVM IR</button></div><wbr>
-        <div><button type=button id=gist title="Share a link to your code via Gist">Share</button></div><wbr>
-        <div class=right-c-e><button type=button id=configure-editor><span>Configure editor</span></button>
-            <div class=dropdown>
-                <p><label for=keyboard>Keyboard bindings:</label>
-                    <select name=keyboard id=keyboard>
+        <div><button type="button" id="gist" title="Share a link to your code via Gist">Share</button></div><wbr>
+        <div class="right-c-e"><button type="button" id="configure-editor"><span>Configure editor</span></button>
+            <div class="dropdown">
+                <p><label for="keyboard">Keyboard bindings:</label>
+                    <select name="keyboard" id="keyboard">
                         <option>Ace</option>
                         <option>Emacs</option>
                         <option>Vim</option>
                     </select>
-                <p><label for=themes>Theme:</label>
-                    <select name=themes id=themes></select>
+                <p><label for="themes">Theme:</label>
+                    <select name="themes" id="themes"></select>
             </div>
         </div>
     </form>
     <main>
-        <div id=editor>actor Main
+        <div id="editor">actor Main
   new create(env: Env) =>
     env.out.print("Hello, world!")</div>
-        <div id=result data-empty>
-            <div></div><button type=button id=clear-result title="Close this pane">×</button>
+        <div id="result" data-empty>
+            <div></div><button type="button" id="clear-result" title="Close this pane">×</button>
         </div>
     </main>
 </body>

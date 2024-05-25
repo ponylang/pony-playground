@@ -1,0 +1,21 @@
+name: Update Playground
+
+on:
+  workflow_dispatch
+
+concurrency:
+  group: "update-playground"
+  cancel-in-progress: false
+
+jobs:
+  update-playground:
+    name: Update https://playground.ponylang.io/
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run remote command
+        uses: ponylang-main/ssh-action@ffff33f8fe0318345a4f00f0e847325954b2a3ed
+        with:
+          host: ${{ secrets.PLAYGROUND_HOST }}
+          username: ${{ secrets.PLAYGROUND_ADMIN_USER }}
+          key: ${{ secrets.PLAYGROUND_KEY }}
+          script: bash update-playground.bash
