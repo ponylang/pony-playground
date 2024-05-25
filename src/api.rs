@@ -10,7 +10,7 @@ use std::net::SocketAddr;
 use http::HeaderValue;
 use tower_http::cors::CorsLayer;
 
-let layer = CorsLayer::new().allow_origin(
+const layer = CorsLayer::new().allow_origin(
     "https://tutorial.ponylang.io".parse::<HeaderValue>().unwrap(),
 );
 
