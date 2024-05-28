@@ -8,8 +8,9 @@ use crate::routes::{compile, create_gist, evaluate, static_css, static_html, sta
 use crate::GithubClient;
 use std::net::SocketAddr;
 
-use serde::Serialize;
+use serde::{Serialize,Deserialize};
 use minijinja::render;
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize)]
 struct Metadata {
@@ -84,11 +85,61 @@ const WEB_HTML_TEMPLATE: &'static str = r#"
 </html>
 "#;
 
-async fn get_web_html() -> Html<String> {
-    let metadata_defaults = Profile {
+#[derive(Deserialize)]
+struct URLSearchParams {
+    snippet: Option<String>,
+    gist: Option<String>,
+    code: Option<String>,
+    run: Option<bool>,
+    branch: Option<String>,
+}
+
+fn extract_docstring(url: String) -> String {
+    let re = Regex::new(r"^\"\"\"\n(?<docstring>.*?)\n\"\"\"").unwrap();
+    let Some(caps) = re.captures(resp.text()?) else { return };
+    let end = &caps["docstring"].chars().map(|c| c.len_utf8()).take(60).sum();
+    return &caps["docstring"][..end];
+}
+
+#[derive(Deserialize)]
+struct Gist {
+    files: HashMap<String, GistFile>,
+}
+
+#[derive(Deserialize)]
+struct GistFile {
+    filename: String,
+    r#type: String,
+    language: String,
+    raw_url: String,
+    size: u128,
+    truncated: bool,
+    content: String,
+}
+
+async fn get_web_html(urlSearchParams: Query<URLSearchParams>) -> Html<String> {
+    let metadata_defaults = Metadata {
         title: "Pony Playground",
         description: "Run ponylang code or compile it to ASM/LLVM IR",
     };
+
+    if Query.snippet.is_some() {
+        let snippet_name = Query.snippet.as_ref().unwrap();
+        let resp = reqwest::blocking::get(concat!("https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/", snippet_name))?;
+        if resp.status().is_success() {
+            metadata_defaults.title = snippet_name
+            metadata_defaults.description = extract_docstring(resp.text()?);
+        }
+    } else if Query.gist.is_some() {
+        let snippet_name = Query.snippet.as_ref().unwrap();
+        let resp = reqwest::blocking::get(concat!("https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/", snippet_name))?;
+        if description.is_some() {
+            metadata_defaults.title = snippet_name
+            let json: Gist = resp.json().unwrap();
+            metadata_defaults.description = extract_docstring(json.content);
+        }
+    }
+    
     let r = render!(WEB_HTML_TEMPLATE, metadata => metadata_defaults );
     Html(r)
 }
