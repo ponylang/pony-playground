@@ -8,6 +8,91 @@ use crate::routes::{compile, create_gist, evaluate, static_css, static_html, sta
 use crate::GithubClient;
 use std::net::SocketAddr;
 
+use serde::Serialize;
+use minijinja::render;
+
+#[derive(Debug, Serialize)]
+struct Metadata {
+    title: String,
+    description: String,
+}
+
+const WEB_HTML_TEMPLATE: &'static str = r#"
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Pony Playground</title>
+    <meta charset="utf-8" />
+    <meta name=viewport id=meta-viewport content="width=720">
+    <script>if (screen.width > 720) { document.getElementById("meta-viewport").setAttribute('content', 'width=device-width'); }</script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro:400,700" />
+    <link rel="shortcut icon" href="https://avatars1.githubusercontent.com/u/12997238" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js"
+        integrity="sha512-OMjy8oWtPbx9rJmoprdaQdS2rRovgTetHjiBf7RL7LvRSouoMLks5aIcgqHb6vGEAduuPdBTDCoztxLR+nv45g=="
+        crossorigin="anonymous" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ext-themelist.min.js"
+        integrity="sha512-Y7MEa84tKNdub5CgOzVCI7jCitaDVPUUrSQmoACBnhOxMQUtxSqZllJ5HsYJvJFQXLfqcbGMCzwid0xMaI7MCA=="
+        crossorigin="anonymous" charset="utf-8"></script>
+
+    <link rel="stylesheet" href="/static/web.css">
+    <script src="/static/web.js"></script>
+    <script src="/static/mode-pony.js"></script>
+
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="app" />
+    <meta name="twitter:site" content="ponylang" />
+    <meta name="twitter:creator" content="ponylang" />
+    {% for (key, value) in metadata %}
+        <meta property="og:{{ key }}" content="{{ value }}">
+        <meta name="twitter:{{ key }}" content="{{ value }}">
+    {% endfor %}
+</head>
+
+<body>
+    <form id="control">
+        <div><button type="button" class="primary" id="evaluate"
+                title="Execute your code (you can also press Ctrl+Enter when editing code)">Run</button><button
+                type="button" id="asm" title="Compile to ASM">ASM</button><button type="button" id="llvm-ir"
+                title="Compile to LLVM IR">LLVM IR</button></div><wbr>
+        <div><button type="button" id="gist" title="Share a link to your code via Gist">Share</button></div><wbr>
+        <div class="right-c-e"><button type="button" id="configure-editor"><span>Configure editor</span></button>
+            <div class="dropdown">
+                <p><label for="keyboard">Keyboard bindings:</label>
+                    <select name="keyboard" id="keyboard">
+                        <option>Ace</option>
+                        <option>Emacs</option>
+                        <option>Vim</option>
+                    </select>
+                <p><label for="themes">Theme:</label>
+                    <select name="themes" id="themes"></select>
+            </div>
+        </div>
+    </form>
+    <main>
+        <div id="editor">actor Main
+  new create(env: Env) =>
+    env.out.print("Hello, world!")</div>
+        <div id="result" data-empty>
+            <div></div><button type="button" id="clear-result" title="Close this pane">×</button>
+        </div>
+    </main>
+</body>
+
+</html>
+</body>
+</html>
+"#;
+
+async fn get_web_html() -> Html<String> {
+    let metadata_defaults = Profile {
+        title: "Pony Playground",
+        description: "Run ponylang code or compile it to ASM/LLVM IR",
+    };
+    let r = render!(WEB_HTML_TEMPLATE, metadata => metadata_defaults );
+    Html(r)
+}
+
 /// serve the api
 pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> {
     let static_routes = Router::new()
@@ -26,7 +111,7 @@ pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> 
     let router = Router::new()
         .route(
             "/",
-            get(|| async { static_html(include_bytes!("../static/web.html")) }),
+            get(get_web_html),
         )
         .route("/evaluate.json", post(evaluate))
         .route("/compile.json", post(compile))

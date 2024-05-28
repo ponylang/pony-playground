@@ -20,6 +20,7 @@ serde_json = "1.0"
 tokio = { version = "1.37", features = ["full"] }
 wait-timeout = "0.2"
 url = { version = "2.5", "features" = ["serde"] }
+minijinja = { version = "2.0", features = ["builtins"] }
 
 [dev-dependencies]
 anyhow = "1.0"
