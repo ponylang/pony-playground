@@ -320,7 +320,7 @@
       }
 
     /**
-     * 
+     * Fetches a gist from the [gist.github.com](https://gist.github.com/) and loads it into the code editor
      * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
      * @param {HTMLDivElement} result 
      * @param {String} gist_id 
@@ -353,6 +353,33 @@
             },
             function (status, response) {
                 set_result(result, "<p class=error>Failed to fetch Gist" +
+                    "<p class=error-explanation>Are you connected to the Internet?");
+            }
+        );
+    }
+
+    /**
+     * Fetches a code snippet from the [`ponylang/pony-tutorial`](https://github.com/ponylang/pony-tutorial) repository on GitHub
+     * and loads it into the code editor
+     * @param {Ace.EditSession} session (see [ace.Ace.Editor::getSession](https://ajaxorg.github.io/ace-api-docs/interfaces/ace.Ace.Editor.html#getSession))
+     * @param {HTMLDivElement} result 
+     * @param {String} gist_id 
+     * @param {bool} do_evaluate 
+     * @param {HTMLButtonElement} evaluateButton 
+     * @return {void}
+     */
+    function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
+        session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/main/code-samples/" + snippet_file_name + " ...");
+        httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/" + snippet_file_name, null, 200,
+            function (response) {
+                session.setValue(response);
+
+                if (do_evaluate) {
+                    doEvaluate();
+                }
+            },
+            function (status, response) {
+                set_result(result, "<p class=error>Failed to fetch snippet" +
                     "<p class=error-explanation>Are you connected to the Internet?");
             }
         );
@@ -619,6 +646,10 @@
         } else if (query.has("gist")) {
             // fetchGist() must defer evaluation until after the content has been loaded
             fetchGist(session, result, query.get("gist"), query.get("run") === "1", evaluateButton);
+            query.set("run", 0);
+        } else if (query.has("snippet")) {
+            // fetchSnippet() must defer evaluation until after the content has been loaded
+            fetchSnippet(session, result, query.get("snippet"), query.get("run") === "1", evaluateButton);
             query.set("run", 0);
         } else {
             var code = optionalLocalStorageGetItem("code");
