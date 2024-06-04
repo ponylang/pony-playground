@@ -374,7 +374,7 @@
             function (response) {
                 session.setValue(response);
 
-                if (query.has('docs')) {
+                if (query.has('docs') && query.get('docs').test(/^([a-z\/-]+)$/)) {
                     const docsUrl = `https://tutorial.ponylang.io/${query.get('docs')}`
                     fetch(docsUrl)
                         .then(res => res.text())
