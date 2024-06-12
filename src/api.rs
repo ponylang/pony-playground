@@ -6,12 +6,14 @@ use axum::{
 
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
 use crate::GithubClient;
-use std::net::SocketAddr;
 use http::HeaderValue;
+use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
 const layer: CorsLayer = CorsLayer::new().allow_origin(
-    "https://tutorial.ponylang.io".parse::<HeaderValue>().unwrap(),
+    "https://tutorial.ponylang.io"
+        .parse::<HeaderValue>()
+        .unwrap(),
 );
 
 /// serve the api
