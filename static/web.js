@@ -368,11 +368,24 @@
      * @param {HTMLButtonElement} evaluateButton 
      * @return {void}
      */
-    function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
+    function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton, docsButton) {
         session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/main/code-samples/" + snippet_file_name + " ...");
         httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/" + snippet_file_name, null, 200,
             function (response) {
                 session.setValue(response);
+
+                if (query.has('docs') && /^([a-z\/-]+)$/.test(query.get('docs'))) {
+                    const docsUrl = `https://tutorial.ponylang.io/${query.get('docs')}`
+                    fetch(docsUrl)
+                        .then(res => res.text())
+                        .then(htmlString => (new DOMParser()).parseFromString(htmlString, "text/html"))
+                        .then(htmlDocument => {
+                            docsButton.querySelector('output').textContent = htmlDocument.querySelector('head > title').textContent
+                        })
+                    docsButton.removeAttribute('hidden')
+                    docsButton.querySelector('output').textContent = query.get('docs') // placeholder, until title is loaded
+                    docsButton.href = docsUrl
+                }
 
                 if (do_evaluate) {
                     doEvaluate();
@@ -481,6 +494,7 @@
     let asmButton;
     let irButton;
     let gistButton;
+    let docsButton;
     let configureEditorButton;
     let result;
     let clearResultButton;
@@ -597,6 +611,7 @@
         asmButton = document.getElementById("asm");
         irButton = document.getElementById("llvm-ir");
         gistButton = document.getElementById("gist");
+        docsButton = document.getElementById("docs");
         configureEditorButton = document.getElementById("configure-editor");
         result = document.getElementById("result").firstElementChild;
         clearResultButton = document.getElementById("clear-result");
@@ -649,7 +664,7 @@
             query.set("run", 0);
         } else if (query.has("snippet")) {
             // fetchSnippet() must defer evaluation until after the content has been loaded
-            fetchSnippet(session, result, query.get("snippet"), query.get("run") === "1", evaluateButton);
+            fetchSnippet(session, result, query.get("snippet"), query.get("run") === "1", evaluateButton, docsButton);
             query.set("run", 0);
         } else {
             var code = optionalLocalStorageGetItem("code");

@@ -119,18 +119,18 @@
     margin-right: 0.5em;
 }
 
-button:first-child {
+button:first-child, a.button:first-child {
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
     border-left-width: 1px;
 }
 
-button:last-child {
+button:last-child, a.button:last-child {
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
 }
 
-button {
+button, a.button {
     color: #333;
     background-color: #fff;
     border: 1px solid rgba(153, 153, 153, 0.5);
@@ -149,7 +149,8 @@ label {
     cursor: pointer;
 }
 
-button:hover, button:focus, button:active {
+button:hover, button:focus, button:active,
+a.button:hover, a.button:focus, a.button:active {
     background: #ebebeb;
 }
 
