@@ -6,7 +6,7 @@ use axum::{
 
 use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
 use crate::GithubClient;
-use http::HeaderValue;
+use axum::http::HeaderValue;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
