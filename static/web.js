@@ -369,17 +369,9 @@
      * @return {void}
      */
     function fetchSnippet(session, result, snippet_file_name, do_evaluate, evaluateButton) {
+        var line = null
         if (snippet_file_name.includes(':')) {
-            let [ snippet_file_name, line ] = snippet_file_name.split(':')
-            if (!Number.isNaN(+line)) {
-                editShowLine(line)
-            } else if (line.includes('-')) {
-                let [ startLine, endLine ] = line.split('-')
-                if (+startLine > +endLine) {
-                    [ endLine, startLine ] = [ startLine, endLine ]
-                }
-                editShowRegion(startLine, 1, endLine, -1)
-            }
+            var [ snippet_file_name, line ] = snippet_file_name.split(':')
         }
         session.setValue("// Loading snippet: https://github.com/ponylang/pony-tutorial/blob/main/code-samples/" + snippet_file_name + " ...");
         httpRequest("GET", "https://raw.githubusercontent.com/ponylang/pony-tutorial/main/code-samples/" + snippet_file_name, null, 200,
@@ -388,6 +380,18 @@
 
                 if (do_evaluate) {
                     doEvaluate();
+                }
+
+                if (line !== null) {
+                    if (!Number.isNaN(+line)) {
+                        editShowLine(line)
+                    } else if (line.includes('-')) {
+                        let [ startLine, endLine ] = line.split('-')
+                        if (+startLine > +endLine) {
+                            [ endLine, startLine ] = [ startLine, endLine ]
+                        }
+                        editShowRegion(startLine, 1, endLine, -1)
+                    }
                 }
             },
             function (status, response) {
