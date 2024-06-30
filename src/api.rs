@@ -10,7 +10,7 @@ use axum::http::HeaderValue;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
-const layer: CorsLayer = CorsLayer::new().allow_origin(
+let layer: CorsLayer = CorsLayer::new().allow_origin(
     "https://tutorial.ponylang.io"
         .parse::<HeaderValue>()
         .unwrap(),
