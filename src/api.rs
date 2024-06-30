@@ -10,14 +10,14 @@ use axum::http::HeaderValue;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;
 
-let layer: CorsLayer = CorsLayer::new().allow_origin(
-    "https://tutorial.ponylang.io"
-        .parse::<HeaderValue>()
-        .unwrap(),
-);
-
 /// serve the api
 pub async fn serve(addr: SocketAddr, github_client: GithubClient) -> Result<()> {
+    let layer: CorsLayer = CorsLayer::new().allow_origin(
+        "https://tutorial.ponylang.io"
+            .parse::<HeaderValue>()
+            .unwrap(),
+    );
+
     let static_routes = Router::new()
         .route(
             "/web.css",
