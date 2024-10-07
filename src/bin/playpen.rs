@@ -22,5 +22,6 @@ async fn main() -> Result<()> {
 
     // TODO: determine either by env var or command line argument
     let addr = SocketAddr::from(([127, 0, 0, 1], 8000));
+    log::info!("Listening on  {addr}...");
     api::serve(addr, github_client).await
 }

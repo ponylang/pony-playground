@@ -9,6 +9,7 @@ use tokio::time;
 #[derive(Debug)]
 pub(crate) enum ChildResult {
     ExitCode(i32),
+    #[allow(dead_code)] // we don't wanna let go of that signal
     Signal(i32),
     TimedOut,
 }
@@ -18,7 +19,7 @@ impl From<ExitStatus> for ChildResult {
         es.code()
             .map(ChildResult::ExitCode)
             .or_else(|| es.signal().map(ChildResult::Signal))
-            .unwrap() // it should either a exitcode or a signal
+            .unwrap() // it should either be an exitcode or a signal
     }
 }
 
