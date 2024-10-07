@@ -760,11 +760,16 @@
         delete transposeletters.bindKey;
         editor.commands.addCommand(transposeletters);
 
-        asmButton.onclick = compile.bind(window, "asm", result, session.getValue(), asmButton);
-
-        irButton.onclick = compile.bind(window, "llvm-ir", result, session.getValue(), irButton);
-
-        gistButton.onclick = shareGist.bind(window, result, session.getValue(), gistButton);
+        // do not use .bind() here, as the call to `session.getValue()` needs to be delayed until the actual click
+        asmButton.onclick = function() {
+            compile("asm", result, session.getValue(), asmButton);
+        };
+        irButton.onclick = function() {
+            compile("llvm-ir", result, session.getValue(), irButton);
+        };
+        gistButton.onclick = function() {
+            shareGist(result, session.getValue(), gistButton);
+        };
 
         configureEditorButton.onclick = function () {
             const dropdown = configureEditorButton.nextElementSibling;
@@ -773,9 +778,13 @@
 
         clearResultButton.onclick = clear_result.bind(window, result);
 
-        themes.onkeyup = themes.onchange = set_theme.bind(window, editor, themelist, themes.options[themes.selectedIndex].text);
+        // not sure, if .bind() could be used here, just for good measure
+        themes.onkeyup = themes.onchange = function() {
+            set_theme(editor, themelist, themes.options[themes.selectedIndex].text);
+        };
     }, false);
 }());
+
 
 
 // called via javascript:fn events from formatCompilerOutput
