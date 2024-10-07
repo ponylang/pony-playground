@@ -10,6 +10,10 @@ use tokio::task::JoinHandle;
 #[tokio::test]
 async fn evaluate() -> Result<()> {
     let _ = env_logger::try_init();
+    // reqwest wants ring, octocrab wants aws_lc_rs
+    // as this is ambiguous
+    // we gotta set a default here, otherwise nothing works
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
     let port = portpicker::pick_unused_port().expect("No port available");
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let serve_addr = addr;
@@ -58,6 +62,10 @@ struct EvaluateOutput {
 #[tokio::test]
 async fn compile() -> Result<()> {
     let _ = env_logger::try_init();
+    // reqwest wants ring, octocrab wants aws_lc_rs
+    // as this is ambiguous
+    // we gotta set a default here, otherwise nothing works
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
     let port = portpicker::pick_unused_port().expect("No port available");
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let serve_addr = addr;

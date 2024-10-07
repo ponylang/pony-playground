@@ -12,22 +12,23 @@ axum = "0.7"
 env_logger = "0.11"
 futures = "0.3"
 
-octocrab = "0.40"
+octocrab = "0.41"
 libc = "0.2"
 log = "0.4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.40", features = ["full"] }
+tower-http = { version = "0.6", features = ["cors"] }
 wait-timeout = "0.2"
 url = { version = "2.5", "features" = ["serde"] }
-tower-http = { version = "0.6", features = ["cors"] }
 
 [dev-dependencies]
 anyhow = "1.0"
-reqwest = { version = "0.12", default_features = false, features = [
+env_logger = "0.11"
+http-body-util = "0.1"
+portpicker = "0.1"
+rustls = "0.23"
+reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls",
   "json",
 ] }
-http-body-util = "0.1"
-env_logger = "0.11"
-portpicker = "0.1"
