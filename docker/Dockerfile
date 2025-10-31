@@ -1,4 +1,4 @@
-FROM ghcr.io/ponylang/ponyc:release-alpine
+FROM ghcr.io/ponylang/ponyc:release
 COPY bin/compile.sh bin/evaluate.sh /usr/local/bin/
 
 ENV CC=gcc
