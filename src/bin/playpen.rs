@@ -1,7 +1,7 @@
 use anyhow::Result;
 
 use pony_playground::api;
-use pony_playground::{init_github_client, GithubClient};
+use pony_playground::{GithubClient, init_github_client};
 use std::net::SocketAddr;
 use std::process::Command;
 

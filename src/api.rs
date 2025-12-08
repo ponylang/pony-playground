@@ -1,11 +1,11 @@
 use anyhow::Result;
 use axum::{
-    routing::{get, post},
     Router,
+    routing::{get, post},
 };
 
-use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
 use crate::GithubClient;
+use crate::routes::{compile, create_gist, evaluate, static_css, static_html, static_js};
 use axum::http::HeaderValue;
 use std::net::SocketAddr;
 use tower_http::cors::CorsLayer;

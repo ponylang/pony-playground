@@ -18,8 +18,8 @@ mod docker;
 pub(crate) mod github;
 pub(crate) mod routes;
 
-pub use github::init_client as init_github_client;
 pub use github::Client as GithubClient;
+pub use github::init_client as init_github_client;
 
 pub struct Playpen;
 

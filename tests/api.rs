@@ -91,10 +91,12 @@ async fn compile() -> Result<()> {
 
     let payload: CompileOutput = res.json().await?;
     assert!(payload.error.is_none());
-    assert!(payload
-        .result
-        .unwrap_or_default()
-        .contains("@Main_tag_create_oo"));
+    assert!(
+        payload
+            .result
+            .unwrap_or_default()
+            .contains("@Main_tag_create_oo")
+    );
 
     // compile with asm output
     let req_data = CompileInput {
@@ -111,10 +113,12 @@ async fn compile() -> Result<()> {
 
     let payload: CompileOutput = res.json().await?;
     assert!(payload.error.is_none());
-    assert!(payload
-        .result
-        .unwrap_or_default()
-        .contains("Main_tag_create_oo:"));
+    assert!(
+        payload
+            .result
+            .unwrap_or_default()
+            .contains("Main_tag_create_oo:")
+    );
 
     // invalid input
     let req_data = CompileInput {
@@ -131,10 +135,12 @@ async fn compile() -> Result<()> {
 
     let payload: CompileOutput = res.json().await?;
     assert!(payload.result.is_none());
-    assert!(payload
-        .error
-        .unwrap_or_default()
-        .contains("no Main actor found in package 'main'"));
+    assert!(
+        payload
+            .error
+            .unwrap_or_default()
+            .contains("no Main actor found in package 'main'")
+    );
     handle.abort();
     Ok(())
 }

@@ -80,7 +80,7 @@ impl Container {
             .arg("--security-opt=no-new-privileges")
             .arg("--interactive")
             .args(
-                &env.iter()
+                env.iter()
                     .map(|(k, v)| format!("--env={}={}", k, v))
                     .collect::<Vec<_>>(),
             )
