@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.1
       - name: Lint codebase
-        uses: docker://github/super-linter:v8.3.0
+        uses: super-linter/super-linter:v8.3.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_ALL_CODEBASE: true
