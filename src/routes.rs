@@ -1,15 +1,15 @@
 //! API Routes
 
-use crate::github::{self, update_gist, Client, GIST_DESCRIPTION, GIST_FILENAME};
-use crate::{highlight, Branch, Playpen};
+use crate::github::{self, Client, GIST_DESCRIPTION, GIST_FILENAME, update_gist};
+use crate::{Branch, Playpen, highlight};
 use anyhow::Result;
 use axum::{
     body::Body,
     extract::{Json, State},
-    http::{header::CONTENT_TYPE, HeaderValue, Response, StatusCode},
+    http::{HeaderValue, Response, StatusCode, header::CONTENT_TYPE},
 };
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use url::Url;
 
 /// evaluate payload
