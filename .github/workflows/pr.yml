@@ -11,7 +11,7 @@ jobs:
     name: Lint bash, docker, markdown, and yaml
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v6.0.2
         with:
           # super-linter needs the full git history to get the
           # list of files that changed across commits
@@ -31,6 +31,6 @@ jobs:
     name: Validate Docker image builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.1
+      - uses: actions/checkout@v6.0.2
       - name: Docker build
         run: "docker build --pull docker/."
