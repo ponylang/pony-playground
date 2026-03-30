@@ -95,7 +95,7 @@ async fn compile() -> Result<()> {
         payload
             .result
             .unwrap_or_default()
-            .contains("@Main_tag_create_oo")
+            .contains("@Main_tag_create_ioo")
     );
 
     // compile with asm output
@@ -117,7 +117,7 @@ async fn compile() -> Result<()> {
         payload
             .result
             .unwrap_or_default()
-            .contains("Main_tag_create_oo:")
+            .contains("Main_tag_create_ioo:")
     );
 
     // invalid input
