@@ -24,7 +24,7 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_BASH: true
           VALIDATE_DOCKERFILE: true
-          VALIDATE_MD: true
+          VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
 
   validate-docker-image-builds:
