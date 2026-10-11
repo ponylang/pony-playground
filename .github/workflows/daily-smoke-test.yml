@@ -1,0 +1,86 @@
+name: Daily Smoke Test
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    name: Verify playground.ponylang.io
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test evaluate (Run button)
+        run: |
+          response=$(curl -s -f -X POST \
+            https://playground.ponylang.io/evaluate.json \
+            -H 'Content-Type: application/json' \
+            -d '{"code":"actor Main\n  new create(env: Env) =>\n    env.out.print(\"hello world\")"}')
+
+          success=$(echo "$response" | jq -r '.success')
+          stdout=$(echo "$response" | jq -r '.stdout')
+
+          if [ "$success" != "true" ]; then
+            echo "::error::Evaluate did not succeed"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          if ! echo "$stdout" | grep -q "hello world"; then
+            echo "::error::Evaluate stdout missing expected output"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          echo "Evaluate: OK"
+
+      - name: Test compile LLVM IR
+        run: |
+          response=$(curl -s -f -X POST \
+            https://playground.ponylang.io/compile.json \
+            -H 'Content-Type: application/json' \
+            -d '{"emit":"llvm-ir","code":"actor Main\n  new create(env: Env) => None"}')
+
+          error=$(echo "$response" | jq -r '.error // empty')
+          result=$(echo "$response" | jq -r '.result // empty')
+
+          if [ -n "$error" ]; then
+            echo "::error::LLVM IR compile returned an error"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          if ! echo "$result" | grep -q "ModuleID"; then
+            echo "::error::LLVM IR output missing ModuleID"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          echo "LLVM IR: OK"
+
+      - name: Test compile ASM
+        run: |
+          response=$(curl -s -f -X POST \
+            https://playground.ponylang.io/compile.json \
+            -H 'Content-Type: application/json' \
+            -d '{"emit":"asm","code":"actor Main\n  new create(env: Env) => None"}')
+
+          error=$(echo "$response" | jq -r '.error // empty')
+          result=$(echo "$response" | jq -r '.result // empty')
+
+          if [ -n "$error" ]; then
+            echo "::error::ASM compile returned an error"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          if ! echo "$result" | grep -q "Disassembly of section"; then
+            echo "::error::ASM output missing disassembly header"
+            echo "$response" | jq .
+            exit 1
+          fi
+
+          echo "ASM: OK"
