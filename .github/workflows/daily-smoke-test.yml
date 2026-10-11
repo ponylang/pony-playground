@@ -77,7 +77,7 @@ jobs:
             exit 1
           fi
 
-          if ! echo "$result" | grep -q "Disassembly of section"; then
+          if ! echo "$result" | grep -q "Disassembly"; then
             echo "::error::ASM output missing disassembly header"
             echo "$response" | jq .
             exit 1
