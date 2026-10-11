@@ -15,23 +15,25 @@ jobs:
     steps:
       - name: Test evaluate (Run button)
         run: |
-          response=$(curl -s -f -X POST \
+          set -euo pipefail
+          curl -s -f -X POST \
             https://playground.ponylang.io/evaluate.json \
             -H 'Content-Type: application/json' \
-            -d '{"code":"actor Main\n  new create(env: Env) =>\n    env.out.print(\"hello world\")"}')
+            -d '{"code":"actor Main\n  new create(env: Env) =>\n    env.out.print(\"hello world\")"}' \
+            -o response.json
 
-          success=$(echo "$response" | jq -r '.success')
-          stdout=$(echo "$response" | jq -r '.stdout')
+          success=$(jq -r '.success' response.json)
+          stdout=$(jq -r '.stdout' response.json)
 
           if [ "$success" != "true" ]; then
             echo "::error::Evaluate did not succeed"
-            echo "$response" | jq .
+            jq . response.json
             exit 1
           fi
 
-          if ! echo "$stdout" | grep -q "hello world"; then
+          if [[ "$stdout" != *"hello world"* ]]; then
             echo "::error::Evaluate stdout missing expected output"
-            echo "$response" | jq .
+            jq . response.json
             exit 1
           fi
 
@@ -39,23 +41,22 @@ jobs:
 
       - name: Test compile LLVM IR
         run: |
-          response=$(curl -s -f -X POST \
+          set -euo pipefail
+          curl -s -f -X POST \
             https://playground.ponylang.io/compile.json \
             -H 'Content-Type: application/json' \
-            -d '{"emit":"llvm-ir","code":"actor Main\n  new create(env: Env) => None"}')
+            -d '{"emit":"llvm-ir","code":"actor Main\n  new create(env: Env) => None"}' \
+            -o response.json
 
-          error=$(echo "$response" | jq -r '.error // empty')
-          result=$(echo "$response" | jq -r '.result // empty')
-
-          if [ -n "$error" ]; then
+          if jq -e '.error' response.json > /dev/null 2>&1; then
             echo "::error::LLVM IR compile returned an error"
-            echo "$response" | jq .
+            jq . response.json
             exit 1
           fi
 
-          if ! echo "$result" | grep -q "ModuleID"; then
+          result=$(jq -r '.result // empty' response.json)
+          if [[ "$result" != *"ModuleID"* ]]; then
             echo "::error::LLVM IR output missing ModuleID"
-            echo "$response" | jq .
             exit 1
           fi
 
@@ -63,23 +64,22 @@ jobs:
 
       - name: Test compile ASM
         run: |
-          response=$(curl -s -f -X POST \
+          set -euo pipefail
+          curl -s -f -X POST \
             https://playground.ponylang.io/compile.json \
             -H 'Content-Type: application/json' \
-            -d '{"emit":"asm","code":"actor Main\n  new create(env: Env) => None"}')
+            -d '{"emit":"asm","code":"actor Main\n  new create(env: Env) => None"}' \
+            -o response.json
 
-          error=$(echo "$response" | jq -r '.error // empty')
-          result=$(echo "$response" | jq -r '.result // empty')
-
-          if [ -n "$error" ]; then
+          if jq -e '.error' response.json > /dev/null 2>&1; then
             echo "::error::ASM compile returned an error"
-            echo "$response" | jq .
+            jq . response.json
             exit 1
           fi
 
-          if ! echo "$result" | grep -q "Disassembly"; then
+          result=$(jq -r '.result // empty' response.json)
+          if [[ "$result" != *"Disassembly"* ]]; then
             echo "::error::ASM output missing disassembly header"
-            echo "$response" | jq .
             exit 1
           fi
 
