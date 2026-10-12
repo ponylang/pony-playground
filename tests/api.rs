@@ -141,7 +141,7 @@ async fn compile() -> Result<()> {
         payload
             .error
             .unwrap_or_default()
-            .contains("no Main actor found in package 'main'")
+            .contains("no Main actor found in module 'main'")
     );
     handle.abort();
     Ok(())
