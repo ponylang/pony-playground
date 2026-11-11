@@ -1,5 +1,6 @@
 //! API Routes
 
+use crate::docker::RunResult;
 use crate::github::{self, Client, GIST_DESCRIPTION, GIST_FILENAME, update_gist};
 use crate::{Branch, Playpen, highlight};
 use anyhow::Result;
@@ -28,13 +29,7 @@ pub async fn evaluate(Json(payload): Json<Evaluate>) -> Result<Json<Value>, Stat
 
     match Playpen::evaluate(branch, payload.code).await {
         Ok((status, compiler, program_stdout)) => {
-            let stderr = String::from_utf8_lossy(status.stderr()).into_owned();
-            Ok(Json(json!({
-                "success": status.success(),
-                "compiler": compiler,
-                "stdout": program_stdout,
-                "stderr": stderr
-            })))
+            Ok(evaluation_response(status, compiler, program_stdout))
         }
         Err(e) => {
             error!("Error evaluating playground code: {}", e);
@@ -60,21 +55,35 @@ pub async fn compile(Json(payload): Json<Compile>) -> Result<Json<Value>, Status
         .unwrap_or(Branch::Release);
 
     match Playpen::compile(branch, payload.code, emit).await {
-        Ok((result, _compiler_output, program_stdout)) => Ok(Json(if result.success() {
-            let output = highlight(emit, &program_stdout);
-            json!({
-                "result": output,
-            })
-        } else {
-            json!({
-                "error": String::from_utf8_lossy(result.stderr()),
-            })
-        })),
+        Ok((result, _compiler_output, program_stdout)) => {
+            Ok(compilation_response(result, emit, program_stdout))
+        }
         Err(e) => {
             error!("Error compiling: {}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }
+}
+
+fn evaluation_response(status: RunResult, compiler: String, stdout: String) -> Json<Value> {
+    Json(json!({
+        "success": status.success(),
+        "compiler": compiler,
+        "stdout": stdout,
+        "stderr": status.stderr_text(),
+    }))
+}
+
+fn compilation_response(
+    result: RunResult,
+    emit: crate::CompileOutput,
+    stdout: String,
+) -> Json<Value> {
+    Json(if result.success() {
+        json!({ "result": highlight(emit, &stdout) })
+    } else {
+        json!({ "error": result.stderr_text() })
+    })
 }
 
 /// create gist payload
@@ -157,4 +166,49 @@ pub fn static_css(content: &'static [u8]) -> Result<Response<Body>, StatusCode> 
 
 pub fn static_html(content: &'static [u8]) -> Result<Response<Body>, StatusCode> {
     static_content(content, TEXT_HTML.clone())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::docker::ChildResult;
+
+    #[test]
+    fn output_limit_responses() {
+        for stderr in [b"".as_slice(), b"diagnostic".as_slice()] {
+            let result = || RunResult {
+                result: ChildResult::OutputLimitExceeded,
+                stdout: b"partial output".to_vec(),
+                stderr: stderr.to_vec(),
+            };
+            let Json(evaluation) =
+                evaluation_response(result(), "compiler".into(), "partial".into());
+            assert_eq!(evaluation["success"], false);
+            assert_eq!(evaluation["compiler"], "compiler");
+            assert_eq!(evaluation["stdout"], "partial");
+            let message = evaluation["stderr"].as_str().unwrap();
+            assert!(message.starts_with(std::str::from_utf8(stderr).unwrap()));
+            assert!(message.contains("Sandbox output exceeded the 8 MiB limit"));
+            let Json(compilation) =
+                compilation_response(result(), crate::CompileOutput::Asm, "partial".into());
+            assert_eq!(compilation["error"], message);
+            assert!(compilation.get("result").is_none());
+        }
+    }
+
+    #[test]
+    fn ordinary_failure_preserves_diagnostic() {
+        let result = || RunResult {
+            result: ChildResult::ExitCode(1),
+            stdout: vec![],
+            stderr: b"compiler error".to_vec(),
+        };
+        let Json(evaluation) = evaluation_response(result(), String::new(), String::new());
+        assert_eq!(evaluation["success"], false);
+        assert_eq!(evaluation["stderr"], "compiler error");
+        let Json(compilation) =
+            compilation_response(result(), crate::CompileOutput::Asm, String::new());
+        assert_eq!(compilation["error"], "compiler error");
+        assert!(compilation.get("result").is_none());
+    }
 }
