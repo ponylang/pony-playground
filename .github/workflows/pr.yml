@@ -62,4 +62,6 @@ jobs:
       - name: build docker image
         run: docker build docker -t ponylang-playpen
       - name: Integration tests
-        run: cargo test --test api -- --ignored --nocapture --test-threads=1
+        run: |
+          cargo test --lib -- --ignored --nocapture --test-threads=1
+          cargo test --test api -- --ignored --nocapture --test-threads=1

@@ -2,6 +2,8 @@
 
 A web interface for running Pony code.
 
+Compilation and evaluation each allow up to 8 MiB of combined stdout and stderr, including compiler diagnostics. Exceeding this limit stops the sandbox and returns an output-limit error.
+
 Heavily based upon the [rust playpen](https://github.com/rust-lang/rust-playpen).
 
 ## Installation
