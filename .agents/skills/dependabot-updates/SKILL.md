@@ -1,6 +1,6 @@
 ---
 name: dependabot-updates
-description: Triage and merge open Dependabot PRs for this repository. Verifies each PR is genuinely from Dependabot, closes spoofed or suspicious ones, and merges the clean ones one at a time — requesting a rebase before each subsequent merge so CI runs against a main that already includes this session's earlier dependency merges. Invoke explicitly with /dependabot-updates.
+description: Triage and merge open Dependabot PRs for this repository. Verifies each PR is genuinely from Dependabot, closes spoofed or suspicious ones, and merges the clean ones one at a time — requesting a rebase before each subsequent merge so CI runs against a main that already includes this session's earlier dependency merges. Invoke explicitly with /dependabot-updates in Claude Code or $dependabot-updates in Codex.
 disable-model-invocation: true
 ---
 
@@ -9,8 +9,7 @@ disable-model-invocation: true
 Handle the repository's open Dependabot pull requests end to end: verify each is
 genuinely from Dependabot, close spoofed or suspicious ones, hand back any that a human
 has pushed commits to, and merge the rest one at a time. This skill runs autonomously —
-it closes and merges PRs without stopping to ask — so it only runs when a human invokes
-`/dependabot-updates`, never on the model's own initiative.
+it closes and merges PRs without stopping to ask — so it only runs when a human invokes `/dependabot-updates` in Claude Code or `$dependabot-updates` in Codex, never on the model's own initiative.
 
 Run it from within the repository checkout; the repository is taken from the `origin`
 remote, not hardcoded. Capture it once:
