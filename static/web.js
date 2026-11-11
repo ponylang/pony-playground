@@ -75,24 +75,23 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                signal: AbortSignal.timeout(5000),
+                signal: AbortSignal.timeout(30000),
                 body: JSON.stringify(data),
             });
+            if (response.status === 200) {
+                json = await response.json();
+            }
         } catch(err) {
-            if ((err instanceof DOMException) && err.name === "AbortError") {
-                set_result(window, result, "<p class=error>Connection timed out" +
-                "<p class=error-explanation>Are you connected to the Internet?");
+            if ((err instanceof DOMException) &&
+                (err.name === "TimeoutError" || err.name === "AbortError")) {
+                set_result(result, "<p class=error>Request timed out");
             } else {
                 set_result(result, "<p class=error>Something went wrong" +
-                        "<p class=error-explanation>The HTTP request produced an error with message " + err.message + ".");
+                        "<p class=error-explanation>The HTTP request produced an error with message " + ansi2html(err.message) + ".");
             }
-        }
-        button.disabled = false;
-
-        try {
-            json = await response.json();
-        } catch (e) {
-            console.log("JSON.parse(): " + e);
+            return;
+        } finally {
+            button.disabled = false;
         }
 
         if (response.status === 200) {

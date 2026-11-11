@@ -21,6 +21,8 @@ pub(crate) mod routes;
 pub use github::Client as GithubClient;
 pub use github::init_client as init_github_client;
 
+const EXECUTION_TIMEOUT: Duration = Duration::from_secs(20);
+
 pub struct Playpen;
 
 impl Playpen {
@@ -35,7 +37,7 @@ impl Playpen {
         input: String,
     ) -> Result<RunResult> {
         let container = Container::new(cmd, &args, &[], branch.image()).await?;
-        container.run(input.as_bytes(), Duration::new(10, 0)).await
+        container.run(input.as_bytes(), EXECUTION_TIMEOUT).await
     }
 
     fn parse_output(raw: &[u8]) -> (String, String) {
@@ -122,4 +124,26 @@ pub fn highlight(output_format: CompileOutput, output: &str) -> String {
     let output = child.wait_with_output().unwrap();
     assert!(output.status.success());
     String::from_utf8(output.stdout).unwrap()
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn browser_timeout_allows_execution_and_response() {
+        let source = include_str!("../static/web.js");
+        let mut timeouts = source.split("AbortSignal.timeout(").skip(1);
+        let milliseconds: u64 = timeouts
+            .next()
+            .expect("browser request timeout")
+            .split_once(')')
+            .unwrap()
+            .0
+            .parse()
+            .unwrap();
+        assert!(timeouts.next().is_none(), "ambiguous browser timeout");
+        assert!(
+            std::time::Duration::from_millis(milliseconds)
+                >= super::EXECUTION_TIMEOUT + std::time::Duration::from_secs(10)
+        );
+    }
 }

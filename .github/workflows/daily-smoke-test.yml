@@ -19,7 +19,7 @@ jobs:
           curl -s -f -X POST \
             https://playground.ponylang.io/evaluate.json \
             -H 'Content-Type: application/json' \
-            -d '{"code":"actor Main\n  new create(env: Env) =>\n    env.out.print(\"hello world\")"}' \
+            -d '{"code":"use \"buffered\"\nuse \"json\"\nactor Main\n  new create(env: Env) =>\n    env.out.print(\"hello world\")"}' \
             -o response.json
 
           success=$(jq -r '.success' response.json)
